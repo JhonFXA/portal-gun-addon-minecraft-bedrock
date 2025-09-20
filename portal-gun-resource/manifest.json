@@ -1,0 +1,27 @@
+{
+	"format_version": 2,
+	"header": {
+		"name": "§aPortal Gun§r RE §7V1.0",
+		"description": "Instant travel. That’s it. That’s the pitch. You’re welcome. Go ahead, blast holes in reality, skip all that boring walking, and maybe, just maybe, you won’t break the entire multiverse.",
+		"uuid": "2dd2ddf1-c543-0ecb-c0d4-23e02b13f369",
+		"version": [1, 0, 0],
+		"min_engine_version": [1, 20, 70]
+	},
+	"metadata": {
+		"authors": ["JhonFX"]
+	},
+	"modules": [
+		{
+			"description": "Portal Gun",
+			"type": "resources",
+			"uuid": "65c1d4df-977f-684f-d28f-95d0ada8375e",
+			"version": [1, 0, 0]
+		}
+	],
+	"dependencies": [
+		{
+			"uuid": "e230472b-d1df-57e4-8e47-4736b55db1b0",
+			"version": [1, 0, 0]
+		}
+	]
+}

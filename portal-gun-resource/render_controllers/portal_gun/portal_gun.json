@@ -1,0 +1,19 @@
+{
+	"format_version": "1.10",
+	"render_controllers": {
+		"controller.render.portal_gun": {
+			"geometry": "geometry.default",
+			"materials": [
+				{
+					"*": "material.default",
+					"tube": "material.tube",
+					"core": "material.default",
+					"glow": "material.glow"
+				}
+			],
+			"textures": [
+				"texture.default"
+			]
+		}
+	}
+}

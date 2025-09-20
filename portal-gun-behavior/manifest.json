@@ -1,0 +1,42 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "§aPortal Gun§r BE §7V1.0",
+    "description": "Instant travel. That’s it. That’s the pitch. You’re welcome. Go ahead, blast holes in reality, skip all that boring walking, and maybe, just maybe, you won’t break the entire multiverse.",
+    "uuid": "e230472b-d1df-57e4-8e47-4736b55db1b0",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 100]
+  },
+  "metadata": {
+    "authors": ["JhonFX"]
+  },
+  "modules": [
+    {
+      "description": "Behavior",
+      "version": [1, 0, 0],
+      "uuid": "4b796861-9d6e-dc1f-4598-7f276b35cb39",
+      "type": "data"
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "17dfd434-861f-430e-9b76-a2bd18307101",
+      "entry": "scripts/main.js",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "2dd2ddf1-c543-0ecb-c0d4-23e02b13f369",
+      "version": [1, 0, 0]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "2.0.0"
+    }
+  ]
+}

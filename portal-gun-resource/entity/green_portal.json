@@ -1,0 +1,60 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "ram_portalgun:green_portal",
+            "materials": {
+                "default": "portal_material",
+                "glow": "entity_beam_additive"
+            },
+            "textures": {
+                "default": "textures/entity/green_portal/green_portal_animated_texture",
+                "glow": "textures/entity/green_portal/glow"
+            },
+            "geometry": {
+                "green_portal": "geometry.green_portal"
+            },
+            "render_controllers": [
+                "controller.render.portal",
+                "controller.render.glow"
+            ],
+            "particle_effects": {
+                "spawn": "ram_portalgun:portal_spawn_particle"
+            },
+            "sound_effects": {
+                "open_portal": "ram_portalgun:portal_spawn",
+                "close_portal": "ram_portalgun:portal_close",
+                "pass_through_portal": "ram_portalgun:portal_enter"
+            },
+            "scripts": {
+                "pre_animation": [
+                    "variable.is_linked = query.property('ram_portalgun:is_linked');",
+                    "variable.orientation = query.property('ram_portalgun:orientation');",
+                    "variable.rotation = query.property('ram_portalgun:rotation');",
+                    "variable.close = query.property('ram_portalgun:close');",
+                    "variable.scale = query.property('ram_portalgun:portal_scale');"
+                ],
+                "animate": [
+                    "open",
+                    "orientation",
+                    "rotation",
+                    "pass",
+                    "scale"
+                ]
+            },
+            "animations": {
+                "orientation": "controller.animation.ram_portalgun.portal.orientation",
+                "default": "animation.ram_portalgun.portal.default",
+                "up": "animation.ram_portalgun.portal.up",
+                "down": "animation.ram_portalgun.portal.down",
+                "rotation": "animation.ram_portalgun.portal.rotation",
+                "pass": "animation.ram_portalgun.portal.pass",
+                "open": "animation.ram_portalgun.portal.open",
+                "close": "animation.ram_portalgun.portal.close",
+                "close_up": "animation.ram_portalgun.portal.close_up",
+                "close_down": "animation.ram_portalgun.portal.close_down",
+                "scale": "animation.ram_portalgun.portal.scale"
+            }
+        }
+    }
+}

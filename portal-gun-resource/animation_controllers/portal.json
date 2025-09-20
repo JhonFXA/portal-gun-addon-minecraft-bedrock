@@ -1,0 +1,54 @@
+{
+	"format_version": "1.19.0",
+	"animation_controllers": {
+		"controller.animation.ram_portalgun.portal.orientation": {
+			"states": {
+				"up": {
+					"animations": ["up"],
+					"transitions": [
+						{"default": "v.orientation != 1"},
+						{"close_up": "v.close"}
+					]
+				},
+				"default": {
+					"animations": ["default"],
+					"particle_effects": [
+						{
+							"effect": "spawn"
+						}
+					],
+					"transitions": [
+						{"up": "v.orientation == 1"},
+						{"down": "v.orientation == 2"},
+						{"close": "v.close"}
+					]
+				},
+				"down": {
+					"animations": ["down"],
+					"transitions": [
+						{"default": "v.orientation != 2"},
+						{"close_down": "v.close"}
+					]
+				},
+				"close": {
+					"animations": ["close"],
+					"transitions": [
+						{"default": "!v.close"}
+					]
+				},
+				"close_up": {
+					"animations": ["close_up"],
+					"transitions": [
+						{"default": "!v.close"}
+					]
+				},
+				"close_down": {
+					"animations": ["close_down"],
+					"transitions": [
+						{"default": "!v.close"}
+					]
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,93 @@
+{
+    "format_version": "1.20.20",
+    "sound_definitions": {
+        "ram_portalgun:error_sound": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/portalgun.error",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:portal_enter": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/portal-enter",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:portal_close": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/close-portal",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:portal_spawn": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/portal-spawn",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:fire_portal": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/fire-portal-gun",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:open_menu": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/open-menu-portal-gun",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:button_click": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/click",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:selection": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/selection",
+                    "volume": 1
+                }
+            ]
+        }
+    }
+}

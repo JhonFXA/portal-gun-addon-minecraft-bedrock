@@ -1,0 +1,10 @@
+{
+	"texture_data": {
+		"portal_gun": {
+			"textures": "textures/items/portal_gun"
+		},
+    	"rick_hair": {
+      		"textures": "textures/items/rick_hair"
+    	}
+	}
+}

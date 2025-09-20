@@ -1,0 +1,12 @@
+{
+    "materials": {
+        "version": "1.0.0",
+        "portal_material:entity_nocull": {
+            "+defines": [
+                "ALPHA_TEST",
+                "USE_EMISSIVE",
+                "USE_UV_ANIM"
+                ]
+        }
+    }
+}
