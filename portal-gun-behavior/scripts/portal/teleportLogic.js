@@ -1,7 +1,6 @@
 import {system, world} from "@minecraft/server";
-import { portalDP, portalSP, portalGunDP, ID} from "../utils/ids&variables";
+import { portalDP, portalSP, portalGunDP, ID, PORTAL_MODES} from "../utils/ids&variables";
 import { calculateEuclideanDistance, findItemInInventory, removePortal } from "../utils/my_API";
-import { PORTAL_MODES } from "./portal_gun";
 
 system.runInterval(() => {
     runCooldown();
@@ -99,8 +98,17 @@ function onTick() {
         }
 
         const orientation = portal.getProperty(portalSP.orientation);
-        let radius = 1.5;
-        if(portal.getProperty(portalSP.scale) > 1){
+        const scale = portal.getProperty(portalSP.scale);
+        let radius = 1;
+
+        if(scale == 0.5) {
+            radius = 0.8;
+        }
+        else if (scale == 1) {
+            if(orientation == 0) radius = 1.2;
+            else radius = 1;
+        }
+        else if(scale > 1){
             if(orientation == 0) radius = 2.2;
             else radius = 2;
         }

@@ -9,6 +9,14 @@ export var ID = {
   portal: "ram_portalgun:green_portal"
 };
 
+export const PORTAL_MODES = {
+    FIFO: "FIFO",
+    LIFO: "LIFO",
+    MULTI_PAIR: "Multi-Pair",
+    ANCHOR: "Anchor",
+    CUSTOM: "CUSTOM"
+};
+
 (function (portalSP) {
   portalSP["isLinked"] = "ram_portalgun:is_linked";
   portalSP["rotation"] = "ram_portalgun:rotation";

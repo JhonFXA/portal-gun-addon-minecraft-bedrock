@@ -29,5 +29,5 @@
 */
 
 import './utils/ids&variables';
-import './portal/portal_gun';
-import './portal/portalTeleporter';
+import './portal/portalGun';
+import './portal/teleportLogic';

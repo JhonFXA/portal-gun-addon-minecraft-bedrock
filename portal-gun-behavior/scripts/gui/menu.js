@@ -60,7 +60,9 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
             portalGunItem.setDynamicProperty(portalGunDP.customLocation, JSON.stringify(selectedLocation));
             portalGunItem.setDynamicProperty(portalGunDP.mode, "CUSTOM")
             inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
-            player.sendMessage("Choosing location: " + selectedLocation.name +  " in dimension " + selectedLocation.dimensionId);
+            player.onScreenDisplay.setActionBar(
+                `§aSet to location: ${selectedLocation.name} (§eX:${selectedLocation.x} Y:${selectedLocation.y} Z:${selectedLocation.z}§r)§r`
+            );
             player.dimension.playSound("ram_portalgun:selection", player.location);
         }
     })
@@ -88,8 +90,8 @@ function openSaveCurrentLocationForm(player, inventory, portalGunItem, savedLoca
             savedLocations.push(newLocationData);
             portalGunItem.setDynamicProperty(portalGunDP.savedLocations, JSON.stringify(savedLocations));
             inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
-            player.sendMessage(`${newLocationData.dimensionId}`);
             player.dimension.playSound("ram_portalgun:selection", player.location);
+            openSavedLocationsForm(player, inventory, portalGunItem);
 
         }
     })
@@ -102,7 +104,10 @@ function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations
     .body("Select a location to delete.");
 
     if(savedLocations.length === 0) {
-        player.sendMessage("No saved locations to delete.");
+        player.onScreenDisplay.setActionBar(
+                `§cNo saved locations to delete.§r`
+            );
+        player.dimension.playSound("ram_portalgun:error_sound", player.location);
         return;
     }
     savedLocations.forEach((location, index) => {
@@ -116,11 +121,9 @@ function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations
             openSavedLocationsForm(player, inventory, portalGunItem);
         }
         else if (response.selection !== undefined){
-            const selectedLocation = savedLocations[response.selection];
             savedLocations.splice(response.selection, 1);
             portalGunItem.setDynamicProperty(portalGunDP.savedLocations, JSON.stringify(savedLocations));
             inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
-            player.sendMessage(`Deleted location: ${selectedLocation.name}`);
             player.dimension.playSound("ram_portalgun:selection", player.location);
             openDeleteLocationForm(player, inventory, portalGunItem, savedLocations);
         }
@@ -143,7 +146,9 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
             return;
         }
         else if( Number.isNaN(parseInt(response.formValues[0]))  || Number.isNaN(parseInt(response.formValues[1])) || Number.isNaN(parseInt(response.formValues[2]))){
-            player.sendMessage("§cERROR: Undefined values.§r");
+            player.onScreenDisplay.setActionBar(
+                `§cInvalid coordinates entered.§r`
+            );
             player.dimension.playSound("ram_portalgun:error_sound", player.location);
         } else {
             const newLocationData = {
@@ -159,7 +164,9 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
             portalGunItem.setDynamicProperty(portalGunDP.customLocation, JSON.stringify(newLocationData));
             inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
             player.dimension.playSound("ram_portalgun:selection", player.location);
-            player.sendMessage(`Custom location set: ${newLocationData.name} at X: ${newLocationData.x}, Y: ${newLocationData.y}, Z: ${newLocationData.z} in dimension ${newLocationData.dimensionId}`);
+            player.onScreenDisplay.setActionBar(
+                `§aSet to location: ${newLocationData.name} (§eX:${newLocationData.x} Y:${newLocationData.y} Z:${newLocationData.z}§r)§r`
+            );
         }
     });
 }
@@ -178,16 +185,24 @@ function openSelectModeForm(player, inventory, portalGunItem) {
     form.show(player).then(response => {
         if(response.selection == 0){
             changePortalGunMode(player, inventory, portalGunItem, "FIFO");
-            player.sendMessage(`Set Mode to FIFO`);
+            player.onScreenDisplay.setActionBar(
+                `§aSet Mode to FIFO.§r`
+            );
         } else if (response.selection == 1){
             changePortalGunMode(player, inventory, portalGunItem, "LIFO");
-            player.sendMessage("Set Mode to LIFO");
+            player.onScreenDisplay.setActionBar(
+                `§aSet Mode to LIFO.§r`
+            );
         } else if (response.selection == 2){
             changePortalGunMode(player, inventory, portalGunItem, "Multi-Pair");
-            player.sendMessage("Set Mode to Multi-Pair");
+            player.onScreenDisplay.setActionBar(
+                `§aSet Mode to Multi-Pair.§r`
+            );
         } else if (response.selection == 3){
             changePortalGunMode(player, inventory, portalGunItem, "Anchor");
-            player.sendMessage("Set Mode to Anchor")
+            player.onScreenDisplay.setActionBar(
+                `§aSet Mode to Anchor.§r`
+            );
         } else if (response.selection == 4){
             openPortalGunMenu(player);
         }
@@ -219,7 +234,6 @@ function openSettingsForm(player, inventory, portalGunItem) {
             //WIP
         } else if (response.selection == 3){
             removeAllPortals(player, portalGunItem);
-            player.sendMessage("Closing All Portals...");
             player.dimension.playSound("ram_portalgun:selection", player.location);
         } else if(response.selection == 4){
             openResetForm(player, portalGunItem, inventory);
@@ -279,7 +293,9 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
             }
 
             inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
-            player.sendMessage("Settings updated.");
+            player.onScreenDisplay.setActionBar(
+                `§aSettings updated.§r`
+            );
             player.dimension.playSound("ram_portalgun:selection", player.location);
         }
 
@@ -302,7 +318,10 @@ function openResetForm(player, portalGunItem, inventory){
             removeAllPortals(player, portalGunItem);
             portalGunItem.clearDynamicProperties();
             inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
-            player.sendMessage("Reseting Portal Gun...");
+            player.dimension.playSound("ram_portalgun:selection", player.location);
+            player.onScreenDisplay.setActionBar(
+                `§aPortal gun has been reset.§r`
+            );
         } else if (response.selection == 1){
             openSettingsForm(player, inventory, portalGunItem);
         }

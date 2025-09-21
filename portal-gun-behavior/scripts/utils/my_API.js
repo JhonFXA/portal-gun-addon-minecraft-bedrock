@@ -3,7 +3,8 @@ import {
   portalSP,
   portalDP,
   ID,
-  portalGunDP
+  portalGunDP,
+  PORTAL_MODES
 } from "../utils/ids&variables";
 
 export function calculateEuclideanDistance(location1, location2) {
@@ -42,7 +43,7 @@ export function spawnPortal(player, dimension, location, rotation, orientation, 
 
     const searchArea = {
       location: location,
-      maxDistance: 2
+      maxDistance: 1
     };
     const queryOptions = {
       ...searchArea,
@@ -87,28 +88,42 @@ export function linkPortals(portalAId, portalBId) {
   }
 }
 
+export function validatePortalList(portalGunItem, inventory, slotIndex) {
+  const portalListJson = portalGunItem.getDynamicProperty(portalGunDP.portalList);
+  let portalIds = portalListJson ? JSON.parse(portalListJson) : [];
+  let validPortalIds = portalIds.filter(id => !!world.getEntity(id));
+  if (validPortalIds.length !== portalIds.length) {
+    portalGunItem.setDynamicProperty(portalGunDP.portalList, JSON.stringify(validPortalIds));
+    inventory.container.setItem(slotIndex, portalGunItem);
+  }
+  return validPortalIds;
+}
+
 export function removePortal(player, portalEntity, mustRemoveDual = true) {
   const inventory = player.getComponent("inventory");
   const portalGunId = portalEntity.getDynamicProperty(portalDP.ownerPortalGun);
   const itemObject = findItemInInventory(player, ID.portalGuns[0], portalGunId);
-  const portalGunItem = itemObject.item;
-  const currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode);
-  const portalListJson = portalGunItem.getDynamicProperty(
+  const portalGunItem = itemObject?.item;
+  const portalListJson = portalGunItem?.getDynamicProperty(
     portalGunDP.portalList
   );
   let portalIds = portalListJson ? JSON.parse(portalListJson) : [];
   let animation_length = 0.46;
   const tickDelay = animation_length * 20;
-
-  if ((currentMode == "Anchor" || currentMode == "CUSTOM") && portalEntity.id == portalIds[0]) {
-    removeAllPortals(player, portalGunItem, itemObject.slotIndex);
-    return;
-  }
-
-  portalIds = portalIds.filter((id) => id !== portalEntity.id);
   
-  if((currentMode == "Anchor" || currentMode == "CUSTOM") && portalIds.length > 1){
-    linkPortals(portalIds[0], portalIds[portalIds.length - 1]);
+  if(itemObject !== undefined){
+    const currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode);
+  
+    if ((currentMode == PORTAL_MODES.ANCHOR || currentMode == PORTAL_MODES.CUSTOM) && portalEntity.id == portalIds[0]) {
+      removeAllPortals(player, portalGunItem, itemObject.slotIndex);
+      return;
+    }
+  
+    portalIds = portalIds.filter((id) => id !== portalEntity.id);
+    
+    if((currentMode == PORTAL_MODES.ANCHOR || currentMode == PORTAL_MODES.CUSTOM) && portalIds.length > 1){
+      linkPortals(portalIds[0], portalIds[portalIds.length - 1]);
+    }
   }
   
   
@@ -145,7 +160,9 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
         system.runTimeout(()=>{
           dualPortal.remove();
         }, tickDelay);
-        portalIds = portalIds.filter((id) => id !== dualPortal.id);
+        if(itemObject !== undefined){
+          portalIds = portalIds.filter((id) => id !== dualPortal.id);
+        }
       }
     }
   }
@@ -179,13 +196,14 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
     portalEntity.remove();
   }, tickDelay);
 
-  savePortalList(
-    portalGunItem,
-    portalIds,
-    player,
-    inventory,
-    itemObject.slotIndex
-  );
+  if(itemObject !== undefined)
+    savePortalList(
+      portalGunItem,
+      portalIds,
+      player,
+      inventory,
+      itemObject.slotIndex
+    );
 }
 
 export function removeAllPortals(player, portalGunItem, slotIndex = player.selectedSlotIndex) {

@@ -3,10 +3,11 @@ import {
   system,
   world
 } from "@minecraft/server";
-import { openPortalGunMenu } from "../gui/index";
+import { openPortalGunMenu } from "../gui/menu";
 import { 
   findItemInInventory, 
   linkPortals,
+  validatePortalList,
   removePortal,
   removeAllPortals, 
   savePortalList, 
@@ -18,16 +19,10 @@ import {
   ID,
   playerDP,
   portalGunDP,
-  portalDP
+  portalDP,
+  PORTAL_MODES
 } from "../utils/ids&variables";
 
-export const PORTAL_MODES = {
-    FIFO: "FIFO",
-    LIFO: "LIFO",
-    MULTI_PAIR: "Multi-Pair",
-    ANCHOR: "Anchor",
-    CUSTOM: "CUSTOM"
-};
 
 function sleep(ticks) {
   return new Promise(resolve => system.runTimeout(resolve, ticks));
@@ -96,6 +91,8 @@ function usePortalGun(player) {
       inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
   }
 
+  validatePortalList(portalGunItem, inventory, player.selectedSlotIndex);
+  
   if(player.isSneaking){
     openPortalGunMenu(player);
   } else {
