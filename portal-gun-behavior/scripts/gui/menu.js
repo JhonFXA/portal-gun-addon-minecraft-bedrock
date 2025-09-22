@@ -30,8 +30,8 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     const form = new ActionFormData()
     .title("Saved Locations")
-    .button("Save Current Location")
-    .button("Delete Location")
+    .button("Save Current Location", "textures/ui/save_ui")
+    .button("Delete Location", "textures/ui/delete_location_ui")
     .divider()
     
     const locationsJson = portalGunItem.getDynamicProperty(portalGunDP.savedLocations);
@@ -41,7 +41,25 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
     if(savedLocations.length > 0){
         form.label(`Locations (${savedLocations.length}):`);
         savedLocations.forEach(location => {
-            form.button(`${location.name}\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${location.dimensionId}`);
+            let dimension;
+            let color;
+            switch(location.dimensionId){
+                case "minecraft:overworld":
+                    dimension = "Overworld"
+                    color = "§q"
+                    break;
+                case "minecraft:nether":
+                    dimension = "Nether"
+                    color = "§4"
+                    break;
+                case "minecraft:the_end":
+                    dimension = "The End"
+                    color = "§u"
+                    break;
+                default:
+                    break;
+            }
+            form.button(`§l${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`);
         });
     } else {
         form.label("No Locations Saved.")
@@ -115,7 +133,7 @@ function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations
         form.button(`${location.name}\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${location.dimensionId}`);
     });
     form.divider()
-    .button("Back to Saved Locations");
+    .button("Cancel");
 
     form.show(player).then(response => {
         if(response.selection == savedLocations.length){
