@@ -108,6 +108,7 @@
           "collection_index": 0
         }
       },
+
       {
         "right_stack": {
           "type": "stack_panel",
@@ -151,6 +152,17 @@
                       "$icon_size": [20, 20],
                       "collection_index": 3
                     }
+                  },
+                  {
+                    "close_button@server_form.custom_button": {
+                      "$button_size": [40, 40],
+                      "$padding": [180, -170],
+                      "$icon_size": [30, 30],
+                      "$show_text": false,
+                      "$offset_image": [0, 0],
+                      "$default_button_texture": "textures/ui/custom_bg_hover",
+                      "collection_index": 4
+                    }
                   }
                 ]
               }
@@ -164,6 +176,8 @@
     "$padding|default": [80, 80],
     "$button_size|default": [64, 64],
     "$icon_size|default": [32, 32],
+    "$show_text|default": true,
+    "$offset_image|default": [0, -5],
     "$default_button_texture": "textures/ui/custom_bg",
     "$hover_button_texture": "textures/ui/custom_bg_hover",
     "$pressed_button_texture": "textures/ui/custom_bg_hover",
@@ -195,7 +209,7 @@
                       "type": "image",
                       "layer": 200,
                       "size": "$icon_size",
-                      "offset": [0, -5],
+                      "offset": "$offset_image",
                       "bindings": [
                         {
                           "binding_name": "#form_button_texture",
@@ -225,6 +239,7 @@
                       "color": [1, 1, 1],
                       "offset": [0, -8],
                       "anchor_from": "bottom_middle",
+                      "visible": "$show_text",
                       "bindings": [
                         {
                           "binding_name": "#form_button_text",

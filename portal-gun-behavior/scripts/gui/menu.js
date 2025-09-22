@@ -14,6 +14,7 @@ export function openPortalGunMenu(player) {
     .button("Set Coordinates", "textures/ui/set_coordinates_ui")
     .button("Select Mode", "textures/ui/select_mode_ui")
     .button("Settings", "textures/ui/settings_ui")
+    .button("", "textures/ui/close_menu");
 
     player.dimension.playSound("ram_portalgun:open_menu", player.location);
 
