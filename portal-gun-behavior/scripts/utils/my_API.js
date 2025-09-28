@@ -293,16 +293,29 @@ export function getRotationToPlayer(player, entityLocation) {
 
   const angle = Math.atan2(dz, dx) * (180 / Math.PI);
 
-  // Normaliza o ângulo para o intervalo de 0 a 360
   const normalizedAngle = (angle + 360) % 360;
 
   if (normalizedAngle >= 315 || normalizedAngle < 45) {
-    return 3; // Leste
+    return 3;
   } else if (normalizedAngle >= 45 && normalizedAngle < 135) {
-    return 0; // Sul
+    return 0;
   } else if (normalizedAngle >= 135 && normalizedAngle < 225) {
-    return 1; // Oeste
+    return 1;
   } else {
-    return 2; // Norte
+    return 2;
   }
+}
+
+export function handlePortalGunHistory(portalGunItem, location){
+  const max = 30;
+  const historyJson = portalGunItem.getDynamicProperty(portalGunDP.historyLocations);
+  let history = historyJson? JSON.parse(historyJson): [];
+
+  if(history.length >= max){
+    history.pop();
+  }
+
+  history.unshift(location);
+  portalGunItem.setDynamicProperty(portalGunDP.historyLocations, JSON.stringify(history));
+  return portalGunItem;
 }

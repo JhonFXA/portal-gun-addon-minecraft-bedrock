@@ -23,6 +23,9 @@ export function openPortalGunMenu(player) {
         else if(response.selection == 1) openSetCoordinatesForm(player, inventory, portalGunItem);
         else if(response.selection == 2) openSelectModeForm(player, inventory, portalGunItem);
         else if(response.selection == 3) openSettingsForm(player, inventory, portalGunItem,);
+        else {
+            player.dimension.playSound("ram_portalgun:button_click", player.location);
+        }
     })
 }
 
@@ -59,7 +62,7 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
                 default:
                     break;
             }
-            form.button(`§l${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`);
+            form.button(`§0${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`);
         });
     } else {
         form.label("No Locations Saved.")
@@ -129,8 +132,26 @@ function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations
         player.dimension.playSound("ram_portalgun:error_sound", player.location);
         return;
     }
-    savedLocations.forEach((location, index) => {
-        form.button(`${location.name}\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${location.dimensionId}`);
+    savedLocations.forEach((location) => {
+        let dimension;
+        let color;
+        switch(location.dimensionId){
+            case "minecraft:overworld":
+                dimension = "Overworld"
+                color = "§q"
+                break;
+            case "minecraft:nether":
+                dimension = "Nether"
+                color = "§4"
+                break;
+            case "minecraft:the_end":
+                dimension = "The End"
+                color = "§u"
+                break;
+            default:
+                break;
+        }
+        form.button(`§0${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`);
     });
     form.divider()
     .button("Cancel");
@@ -171,7 +192,7 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
             player.dimension.playSound("ram_portalgun:error_sound", player.location);
         } else {
             const newLocationData = {
-                name: "Custom Location",
+                name: "Unnamed Location",
                 id: -1,
                 x: parseInt(response.formValues[0]),
                 y: parseInt(response.formValues[1]),
@@ -235,10 +256,11 @@ function openSettingsForm(player, inventory, portalGunItem) {
     .title("Portal Gun Settings")
     .button("Behavior Settings", "textures/ui/toggle")
     .divider()
-    .button("How to Use", "textures/ui/question-mark")
+    .button("History", "textures/ui/history")
     .button("Dismount Portal Gun", "textures/ui/dismount")
     .button("Close All Portals", "textures/ui/close-all-portals")
     .button("Reset Portal Gun", "textures/ui/reset-portal-gun")
+    .button("How to Use", "textures/ui/question-mark")
     .button("Debug Menu", "textures/ui/debug")
     .divider()
     .button("Back to Menu")
@@ -246,9 +268,8 @@ function openSettingsForm(player, inventory, portalGunItem) {
     form.show(player).then(response => {
         if(response.selection == 0){
             openBehaviorSettingsForm(player, portalGunItem, inventory);
-
         } else if (response.selection == 1){
-            openHowToUseForm(player, inventory, portalGunItem);
+            openHistoryForm(player, inventory, portalGunItem);
         } else if (response.selection == 2){
             //WIP
         } else if (response.selection == 3){
@@ -257,9 +278,10 @@ function openSettingsForm(player, inventory, portalGunItem) {
         } else if(response.selection == 4){
             openResetForm(player, portalGunItem, inventory);
         } else if(response.selection == 5){
+            openHowToUseForm(player, inventory, portalGunItem);
+        } else if(response.selection == 6){
             openDebugMenu(player);
-        }
-        else if(response.selection == 6){
+        } else if(response.selection == 7){
             openPortalGunMenu(player);
         }
     })
@@ -319,6 +341,61 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
         }
 
     })
+}
+
+function openHistoryForm(player, inventory, portalGunItem){
+    player.dimension.playSound("ram_portalgun:button_click", player.location);
+    const historyJson = portalGunItem.getDynamicProperty(portalGunDP.historyLocations);
+    const history =  historyJson ? JSON.parse(historyJson) : [];
+
+    let form = new ActionFormData()
+    .title("History")
+    .body("Here you can view your §eportal gun's teleportation history§r.\nSelect a location below to use it.\n\n§eLimit: 30 locations§r")
+    .divider();
+
+    if(history.length == 0){
+        form.label("§eNo history to show.§r");
+    } else {
+        history.forEach( location => {
+            let dimension;
+                let color;
+                switch(location.dimensionId){
+                    case "minecraft:overworld":
+                        dimension = "Overworld"
+                        color = "§q"
+                        break;
+                    case "minecraft:nether":
+                        dimension = "Nether"
+                        color = "§4"
+                        break;
+                    case "minecraft:the_end":
+                        dimension = "The End"
+                        color = "§u"
+                        break;
+                    default:
+                        break;
+                }
+            form.button(`§0${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`)
+        });
+    }
+    form.divider()
+    .button("Back to Settings");
+
+    form.show(player).then(response => {
+        if (response.selection == history.length){
+            openSettingsForm(player, inventory, portalGunItem);
+        }
+        else if (response.selection !== undefined){
+            const selectedLocation = history[response.selection];
+            portalGunItem.setDynamicProperty(portalGunDP.customLocation, JSON.stringify(selectedLocation));
+            portalGunItem.setDynamicProperty(portalGunDP.mode, "CUSTOM")
+            inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
+            player.onScreenDisplay.setActionBar(
+                `§aSet to location: ${selectedLocation.name} (§eX:${selectedLocation.x} Y:${selectedLocation.y} Z:${selectedLocation.z}§r)§r`
+            );
+            player.dimension.playSound("ram_portalgun:selection", player.location);
+        }
+    });
 }
 
 function openResetForm(player, portalGunItem, inventory){

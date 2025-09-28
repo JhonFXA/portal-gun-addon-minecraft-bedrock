@@ -12,7 +12,8 @@ import {
   removeAllPortals, 
   savePortalList, 
   spawnPortal,
-  getRotationToPlayer
+  getRotationToPlayer,
+  handlePortalGunHistory
 } from "../utils/my_API";
 
 import {
@@ -184,6 +185,7 @@ function handleCustomMode(
   // Parse custom location from item property
   const customLocationJson = portalGunItem.getDynamicProperty(portalGunDP.customLocation);
   const customLocation = JSON.parse(customLocationJson);
+  const fixedCustomLocation = JSON.parse(JSON.stringify(customLocation));
   const customLocationId = customLocation.id;
 
   // If there is already a portal, check if it matches the custom location
@@ -202,15 +204,15 @@ function handleCustomMode(
 
   // Prepare custom location and orientation
   const targetDimension = world.getDimension(customLocation.dimensionId);
-  customLocation.x += 0.5;
-  customLocation.z += 0.5;
+  fixedCustomLocation.x += 0.5;
+  fixedCustomLocation.z += 0.5;
 
   let customPortalOrientation = 0;
   if (orientation === 1) {
     customPortalOrientation = 2;
   } else if (orientation === 2) {
     customPortalOrientation = 1;
-    customLocation.y += 2;
+    fixedCustomLocation.y += 2;
   }
 
   // Create a ticking area to load the chunk
@@ -218,7 +220,7 @@ function handleCustomMode(
   const tickingAreaName = `portal_${player.name}_${randomId}`;
   try {
     targetDimension.runCommand(
-      `tickingarea add circle ${customLocation.x} ${customLocation.y} ${customLocation.z} 1 "${tickingAreaName}"`
+      `tickingarea add circle ${fixedCustomLocation.x} ${fixedCustomLocation.y} ${fixedCustomLocation.z} 1 "${tickingAreaName}"`
     );
   } catch (e) {
     console.error(`Failed to create ticking area: ${e}`);
@@ -233,7 +235,7 @@ function handleCustomMode(
       let customPortal = spawnPortal(
         player,
         targetDimension,
-        customLocation,
+        fixedCustomLocation,
         rotation,
         customPortalOrientation,
         scale,
@@ -249,6 +251,7 @@ function handleCustomMode(
       portalIds = [customPortal.id, newPortal.id];
 
       portalGunItem.setDynamicProperty(portalGunDP.portalList, JSON.stringify(portalIds));
+      portalGunItem = handlePortalGunHistory(portalGunItem, customLocation);
       inventory.container.setItem(itemObject.slotIndex, portalGunItem);
     } else {
       player.sendMessage(

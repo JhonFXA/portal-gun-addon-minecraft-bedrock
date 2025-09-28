@@ -27,7 +27,7 @@
             },
             {
               "binding_type": "view",
-              "source_property_name": "(not (#title_text = 'Portal Gun Options') and not (#title_text = 'Saved Locations'))",
+              "source_property_name": "(not (#title_text = 'Portal Gun Options') and not (#title_text = 'Saved Locations') and not (#title_text = 'History') and not (#title_text = 'Delete Location'))",
               "target_property_name": "#visible"
             }
           ]
@@ -81,7 +81,7 @@
             },
             {
               "binding_type": "view",
-              "source_property_name": "(#title_text = 'Saved Locations')",
+              "source_property_name": "(#title_text = 'Saved Locations') or (#title_text = 'History') or (#title_text = 'Delete Location')",
               "target_property_name": "#visible"
             }
           ]
@@ -391,7 +391,6 @@
   "big_button": {
     "type": "panel",
     "size": ["100%", 40],
-    "orientation": "horizontal",
     "controls": [
       {
         "panel_name": {

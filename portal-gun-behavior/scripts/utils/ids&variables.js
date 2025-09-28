@@ -45,6 +45,7 @@ export const PORTAL_MODES = {
   portalGunDP["customLocation"] = "ram_portalgun:custom_location";
   portalGunDP["customLocationIndex"] = "ram_portalgun:custom_location_index";
   portalGunDP["savedLocations"] = "ram_portalgun:saved_locations";
+  portalGunDP["historyLocations"] = "ram_portalgun:history_locations";
   portalGunDP["autoClose"] = "ram_portalgun:auto_close";
   portalGunDP["highPressure"] = "ram_portalgun:high_pressure";
   portalGunDP["charge"] = "ram_portalgun:charge";
