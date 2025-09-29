@@ -31,8 +31,12 @@ function sleep(ticks) {
 
 async function waitForChunkLoad(dimension, location, timeoutTicks = 100) {
   for (let i = 0; i < timeoutTicks; i++) {
-    if (dimension.getBlock(location)) {
+    try {
+      if (dimension.getBlock(location)) {
       return true;
+      }
+    } catch (e) {
+      // Ignore errors, likely chunk not loaded yet
     }
     await sleep(1);
   }
@@ -75,7 +79,8 @@ function fireProjectile(player) {
 
     player.dimension.playSound("ram_portalgun:fire_portal", player.location);
   } catch (error) {
-    console.error(`[PortalGun] Falha ao disparar projétil: ${error}`);
+    player.sendMessage(`§c[Portal Gun] Failed to fire projectile: \n§e[!] ${error}§r`);
+    player.dimension.playSound("ram_portalgun:error_sound", player.location);
   }
 }
 
@@ -112,7 +117,7 @@ function getPortalPlacement(player, target) {
   if ("block" in target) {
     const block = target.block;
     if (!block?.isValid) {
-      player.sendMessage("Block is not valid!");
+      player.onScreenDisplay.setActionBar("§e[!] Block is not valid!");
       return;
     }
     const face = target.face;
@@ -159,7 +164,7 @@ function getPortalPlacement(player, target) {
   } else if ("entity" in target) {
     const entity = target.entity;
     if (!entity?.isValid) {
-      player.sendMessage("Entity is not valid!");
+      player.onScreenDisplay.setActionBar("§e[!] Entity is not valid!");
       return;
     }
     location = entity.location;
@@ -224,7 +229,7 @@ function handleCustomMode(
     );
   } catch (e) {
     console.error(`Failed to create ticking area: ${e}`);
-    player.sendMessage("§cAn error occurred while trying to load the portal area.§r");
+    player.sendMessage("§c[!] An error occurred while trying to load the portal area.§r");
     return;
   }
 
@@ -255,7 +260,7 @@ function handleCustomMode(
       inventory.container.setItem(itemObject.slotIndex, portalGunItem);
     } else {
       player.sendMessage(
-        "§cFailed to load the remote portal area. The location may be invalid or the server is overloaded.§r"
+        "§c[!] Failed to load the remote portal area. The location may be invalid or the server is overloaded.§r"
       );
       removePortal(player, newPortal, false);
       try {
@@ -268,7 +273,7 @@ function handleCustomMode(
 function summonPortal(player, target) {
   const placement = getPortalPlacement(player, target);
   if (!placement) {
-    player.sendMessage("§cInvalid target for portal placement.§r");
+    player.sendMessage("§c[!] Invalid target for portal placement.§r");
     return;
   }
   const { location, rotation, orientation } = placement;
@@ -283,7 +288,7 @@ function summonPortal(player, target) {
     const itemObject = findItemInInventory(player, ID.portalGuns[0], ownerId);
     const portalGunItem = itemObject?.item;
     if (!portalGunItem) {
-      player.sendMessage("§cPortal Gun not found in inventory.");
+      player.sendMessage("§c[!] Portal Gun not found in inventory.");
       return;
     }
     const portalGunMode = portalGunItem.getDynamicProperty(portalGunDP.mode);

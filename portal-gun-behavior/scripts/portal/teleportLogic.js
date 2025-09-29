@@ -122,7 +122,7 @@ function onTick() {
                     activateCooldown(entity);
                     entity.setDynamicProperty(portalDP.lastPortalUsed, dualPortal.id);
                     entity.addTag(TELEPORTED_TAG);
-                    //OBSERVACAO: ENTIDADES PODEM SUMIR QUANDO TELEPORTADAS PARA DIMENSOES DIFERENTES
+                    //NOTE: ENTITIES MAY DISAPPEAR WHEN TELEPORTED TO DIFFERENT DIMENSIONS
                     teleportEntityToLocation(dualPortal, entity);
                 } else {
                     playerUsePortal(portal, dualPortal, entity);

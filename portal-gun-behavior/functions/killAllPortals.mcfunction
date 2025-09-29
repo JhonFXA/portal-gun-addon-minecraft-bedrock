@@ -1,0 +1,1 @@
+kill @e[type = ram_portalgun:green_portal]
