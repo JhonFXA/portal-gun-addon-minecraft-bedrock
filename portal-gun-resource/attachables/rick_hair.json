@@ -5,7 +5,7 @@
         "identifier": "ram_portalgun:rick_hair",
         "item": { "ram_portalgun:rick_hair": "query.is_owner_identifier_any('minecraft:player')" },
         "materials": {
-          "default": "entity_alphablend",
+          "default": "armor",
           "enchanted": "armor_enchanted"
         },
         "textures": {
