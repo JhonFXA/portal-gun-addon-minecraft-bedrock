@@ -182,10 +182,7 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
     .dropdown("Dimension", ["Overworld", "Nether", "The End"],{ defaultValueIndex: 0 })
 
     form.show(player).then(response => {
-        if(response.cancelled) {
-            return;
-        }
-        else if( Number.isNaN(parseInt(response.formValues[0]))  || Number.isNaN(parseInt(response.formValues[1])) || Number.isNaN(parseInt(response.formValues[2]))){
+        if( Number.isNaN(parseInt(response.formValues[0]))  || Number.isNaN(parseInt(response.formValues[1])) || Number.isNaN(parseInt(response.formValues[2]))){
             player.onScreenDisplay.setActionBar(
                 `§cInvalid coordinates entered.§r`
             );
@@ -193,7 +190,7 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
         } else {
             const newLocationData = {
                 name: "Unnamed Location",
-                id: -1,
+                id: -Math.floor(Math.random() * 10000),
                 x: parseInt(response.formValues[0]),
                 y: parseInt(response.formValues[1]),
                 z: parseInt(response.formValues[2]),
@@ -296,11 +293,15 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
     .title("Behavior Settings")
     .toggle("Auto Close Portals", {
         defaultValue: autoClose? true: false,
-        tooltip: "If enabled, portals will automatically close after player enters them."
+        tooltip: "If enabled, portals will automatically\nclose after player enters them."
     })
     .toggle("High Pressure Mode", {
         defaultValue: portalGunItem.getDynamicProperty(portalGunDP.highPressure)? true: false,
-        tooltip: "If enabled, portal gun will shoot a high pressure projectile that can reach further distances."
+        tooltip: "If enabled, portal gun will shoot\na high pressure projectile that\ncan reach further distances."
+    })
+    .toggle("Safe Placement", {
+        defaultValue: portalGunItem.getDynamicProperty(portalGunDP.safePlacement)? true: false,
+        tooltip: "If enabled, it ensures portals\open only in safe spots,\nnever buried underground or\nfloating too high."
     })
     .slider("Portal Scale (Coming Soon)", 1, 4, {
         defaultValue: scale == 0.5? 1 : scale == 1? 2 : scale == 1.5? 3 : scale == 2? 4 : 2,
@@ -315,7 +316,8 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
         } else {
             portalGunItem.setDynamicProperty(portalGunDP.autoClose, response.formValues[0]);
             portalGunItem.setDynamicProperty(portalGunDP.highPressure, response.formValues[1]);
-            switch(response.formValues[2]){
+            portalGunItem.setDynamicProperty(portalGunDP.safePlacement, response.formValues[2]);
+            switch(response.formValues[3]){
                 case 1:
                     portalGunItem.setDynamicProperty(portalGunDP.scale, 0.5);
                     break;

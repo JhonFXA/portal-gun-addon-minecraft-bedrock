@@ -1,4 +1,4 @@
-import { world, system, MolangVariableMap } from "@minecraft/server";
+import { world, system, MolangVariableMap, BlockVolume } from "@minecraft/server";
 import {
   portalSP,
   portalDP,
@@ -318,4 +318,32 @@ export function handlePortalGunHistory(portalGunItem, location){
   history.unshift(location);
   portalGunItem.setDynamicProperty(portalGunDP.historyLocations, JSON.stringify(history));
   return portalGunItem;
+}
+
+export function findNearbyAir(dimension, center, radius = 10) {
+  const volume = new BlockVolume(
+    {
+      x: center.x - radius,
+      y:  center.y - radius,
+      z: center.z - radius,
+    },
+    {
+      x: center.x + radius,
+      y: center.y + radius,
+      z: center.z + radius,
+    }
+  );
+
+  const locations = [];
+  try{
+    const airBlocks = dimension.getBlocks(volume, { includeTypes: ["minecraft:air", "minecraft:water"] });
+    for (const loc of airBlocks.getBlockLocationIterator()) {
+      locations.push({ x: loc.x, y: loc.y, z: loc.z });
+    }
+  } catch (e){
+    console.error(e)
+  }
+
+
+  return locations;
 }

@@ -13,7 +13,8 @@ import {
   savePortalList, 
   spawnPortal,
   getRotationToPlayer,
-  handlePortalGunHistory
+  handlePortalGunHistory,
+  findNearbyAir
 } from "../utils/my_API";
 
 import {
@@ -187,13 +188,13 @@ function handleCustomMode(
   scale,
   portalGunId
 ) {
-  // Parse custom location from item property
   const customLocationJson = portalGunItem.getDynamicProperty(portalGunDP.customLocation);
   const customLocation = JSON.parse(customLocationJson);
   const fixedCustomLocation = JSON.parse(JSON.stringify(customLocation));
   const customLocationId = customLocation.id;
+  const safePlacement = portalGunItem.getDynamicProperty(portalGunDP.safePlacement) === true;
 
-  // If there is already a portal, check if it matches the custom location
+  // Check if portal already exists
   if (portalIds.length > 1) {
     const anchorPortal = world.getEntity(portalIds[0]);
     if (customLocationId !== anchorPortal?.getDynamicProperty(portalDP.locationId)) {
@@ -207,25 +208,13 @@ function handleCustomMode(
     }
   }
 
-  // Prepare custom location and orientation
   const targetDimension = world.getDimension(customLocation.dimensionId);
-  fixedCustomLocation.x += 0.5;
-  fixedCustomLocation.z += 0.5;
-
-  let customPortalOrientation = 0;
-  if (orientation === 1) {
-    customPortalOrientation = 2;
-  } else if (orientation === 2) {
-    customPortalOrientation = 1;
-    fixedCustomLocation.y += 2;
-  }
-
-  // Create a ticking area to load the chunk
   const randomId = Math.floor(Math.random() * 10000);
   const tickingAreaName = `portal_${player.name}_${randomId}`;
+  
   try {
     targetDimension.runCommand(
-      `tickingarea add circle ${fixedCustomLocation.x} ${fixedCustomLocation.y} ${fixedCustomLocation.z} 1 "${tickingAreaName}"`
+      `tickingarea add circle ${fixedCustomLocation.x} ${fixedCustomLocation.y} ${fixedCustomLocation.z} 4 "${tickingAreaName}"`
     );
   } catch (e) {
     console.error(`Failed to create ticking area: ${e}`);
@@ -233,40 +222,129 @@ function handleCustomMode(
     return;
   }
 
-  // Wait for chunk to load and spawn portal
+  // Wait for chunk to load and then spawn the portal
   system.run(async () => {
     const chunkLoaded = await waitForChunkLoad(targetDimension, customLocation);
-    if (chunkLoaded) {
-      let customPortal = spawnPortal(
-        player,
-        targetDimension,
-        fixedCustomLocation,
-        rotation,
-        customPortalOrientation,
-        scale,
-        portalGunId
-      );
-      if (!customPortal) {
-        throw new Error("The portal area did not load in time. Please try again.");
-      }
-      customPortal.setDynamicProperty(portalDP.locationId, customLocationId);
-      customPortal.setDynamicProperty(portalDP.tickingArea, tickingAreaName);
-
-      linkPortals(customPortal.id, newPortal.id);
-      portalIds = [customPortal.id, newPortal.id];
-
-      portalGunItem.setDynamicProperty(portalGunDP.portalList, JSON.stringify(portalIds));
-      portalGunItem = handlePortalGunHistory(portalGunItem, customLocation);
-      inventory.container.setItem(itemObject.slotIndex, portalGunItem);
-    } else {
+    
+    if (!chunkLoaded) {
       player.sendMessage(
-        "§c[!] Failed to load the remote portal area. The location may be invalid or the server is overloaded.§r"
+          "§c[!] Failed to load the remote portal area. The location may be invalid or the server is overloaded.§r"
       );
       removePortal(player, newPortal, false);
-      try {
-        targetDimension.runCommand(`tickingarea remove "${tickingAreaName}"`);
-      } catch {}
+      targetDimension.runCommand(`tickingarea remove "${tickingAreaName}"`);
+      return;
     }
+
+    if(safePlacement){
+      let foundValidSpot = false;
+
+      const block = targetDimension.getBlock(customLocation);
+      
+      if(!block){
+        world.sendMessage("oh man")
+        return;
+      }
+
+      if(block && block.isAir){
+        let safeY = fixedCustomLocation.y;
+        while (safeY > targetDimension.heightRange.min) {
+          const groundBlock = targetDimension.getBlock({ x: fixedCustomLocation.x, y: safeY - 1, z: fixedCustomLocation.z });
+
+          // Found solid ground?
+          if (groundBlock && !groundBlock.isAir) {
+            if(fixedCustomLocation.y - safeY > 8){
+              fixedCustomLocation.y = safeY;
+            }
+            foundValidSpot = true;
+            break;
+          }
+          safeY--;
+        }
+      } else {
+        // First attempt: search for nearby air within radius 15
+        let candidates = []
+        
+        try {
+          candidates = findNearbyAir(targetDimension, customLocation, 10);
+        } catch (e){
+          player.sendMessage("§c[!] Error finding a safe location for the portal.§r");
+          removePortal(player, newPortal, false);
+          targetDimension.runCommand(`tickingarea remove "${tickingAreaName}"`);
+          return;
+        }
+    
+        if (candidates.length > 0) {
+        // Sort candidates by distance from original location
+        candidates.sort((a, b) => {
+          const da =
+            (a.x - fixedCustomLocation.x) ** 2 +
+            (a.y - fixedCustomLocation.y) ** 2 +
+            (a.z - fixedCustomLocation.z) ** 2;
+          const db =
+            (b.x - fixedCustomLocation.x) ** 2 +
+            (b.y - fixedCustomLocation.y) ** 2 +
+            (b.z - fixedCustomLocation.z) ** 2;
+          return da - db;
+        });
+    
+        const best = candidates[0];
+        fixedCustomLocation.x = best.x + 0.5;
+        fixedCustomLocation.y = best.y;
+        fixedCustomLocation.z = best.z + 0.5;
+        foundValidSpot = true;
+        } else {
+          // Fallback: vertical scan upwards until air is found
+          const maxHeight = targetDimension.heightRange.max;
+          while (fixedCustomLocation.y < maxHeight) {
+            const block = targetDimension.getBlock(fixedCustomLocation);
+            if (block && (block.isAir || block.typeId === "minecraft:water")) {
+              foundValidSpot = true;
+              break;
+            }
+            fixedCustomLocation.y++;
+          }
+        }
+      }
+
+      if (!foundValidSpot) {
+      player.sendMessage("§c[!] The target location is not safe.§r");
+      removePortal(player, newPortal, false);
+      targetDimension.runCommand(`tickingarea remove "${tickingAreaName}"`);
+      return;
+      }
+    }
+    let customPortalOrientation = 0;
+    if (orientation === 1) {
+      customPortalOrientation = 2;
+    } else if (orientation === 2) {
+      customPortalOrientation = 1;
+      fixedCustomLocation.y += 2;
+    }
+    let customPortal = spawnPortal(
+      player,
+      targetDimension,
+      fixedCustomLocation,
+      rotation,
+      customPortalOrientation,
+      scale,
+      portalGunId
+    );
+    if (!customPortal) {
+      player.sendMessage("§c[!] The portal area did not load in time. Please try again.§r");
+      removePortal(player, newPortal, false);
+      targetDimension.runCommand(`tickingarea remove "${tickingAreaName}"`);
+      return;
+    }
+    customPortal.setDynamicProperty(portalDP.locationId, customLocationId);
+    customPortal.setDynamicProperty(portalDP.tickingArea, tickingAreaName);
+
+    linkPortals(customPortal.id, newPortal.id);
+    portalIds = [customPortal.id, newPortal.id];
+
+    portalGunItem.setDynamicProperty(portalGunDP.portalList, JSON.stringify(portalIds));
+    portalGunItem = handlePortalGunHistory(portalGunItem, customLocation);
+    inventory.container.setItem(itemObject.slotIndex, portalGunItem);
+
   });
 }
 
@@ -399,6 +477,12 @@ world.afterEvents.projectileHitEntity.subscribe((event) => {
   if (event.projectile.typeId !== ID.fluidProjectile && event.projectile.typeId !== ID.fluidProjectileHighPressure) {
     return;
   }
+
+  const hitEntity = event.getEntityHit()?.entity;
+  if(hitEntity.typeId == ID.portal){
+    return;
+  }
+
   const player = event.source;
   summonPortal(player, event.getEntityHit());
 });
