@@ -1,0 +1,29 @@
+{
+	"format_version": "1.16.0",
+	"animations": {
+		"animation.portal_gun_base.first_person_hold": {
+			"loop": true,
+			"animation_length": 2,
+			"bones": {
+				"root": {
+					"rotation": [146.46937, -19.02224, -10.87729],
+					"position": [-10.74987, 29.42334, -3.04473]
+				}
+			}
+		},
+		"animation.portal_gun_base.third_person_hold": {
+			"loop": true,
+			"animation_length": 2,
+			"bones": {
+				"root": {
+					"rotation": [83.00553, -37.11918, 95.76824],
+					"position": [0, 23, -1]
+				},
+				"main": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				}
+			}
+		}
+	}
+}

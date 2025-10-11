@@ -1,0 +1,36 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:attachable": {
+        "description": {
+            "identifier": "ram_portalgun:charged_tube",
+            "render_controllers": [
+                "controller.render.charged_tube"
+            ],
+            "materials": {
+                "default": "entity_alphatest",
+                "tube": "entity_alphablend",
+                "fluid": "entity_emissive_alpha"
+            },
+            "textures": {
+                "default": "textures/attachable/charged_tube"
+            },
+            "geometry": {
+                "default": "geometry.charged_tube"
+            },
+            "animations": {
+                "first_person_hold": "animation.charged_tube.first_person_hold",
+                "third_person_hold": "animation.charged_tube.third_person_hold"
+            },
+            "scripts": {
+                "animate": [
+                    {
+                        "first_person_hold": "c.is_first_person"
+                    },
+                    {
+                        "third_person_hold": "!c.is_first_person"
+                    }
+                ]
+            }
+        }
+    }
+}

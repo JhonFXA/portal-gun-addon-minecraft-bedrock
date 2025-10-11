@@ -1,0 +1,31 @@
+{
+  "format_version": "1.21.60",
+  "minecraft:crafting_items_catalog": {
+    "categories": [
+      {
+        "category_name": "equipment",
+        "groups": [
+          {
+            "group_identifier": {
+              "icon": "ram_portalgun:portal_gun",
+              "name": "ram_portalgun:portal_gun_group"
+            },
+            "items": ["ram_portalgun:portal_gun"]
+          }
+        ]
+      },
+      {
+        "category_name": "items",
+        "groups": [
+          {
+            "group_identifier": {
+              "icon": "ram_portalgun:rick_hair",
+              "name": "ram_portalgun:head_accessories_group"
+            },
+            "items": ["ram_portalgun:rick_hair"]
+          }
+        ]
+      }
+    ]
+  }
+}

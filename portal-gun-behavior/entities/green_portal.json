@@ -84,7 +84,6 @@
             },
             "minecraft:persistent":{},
             "minecraft:movement.basic": {},
-            "minecraft:nameable": {},
             "minecraft:damage_sensor": {
                 "triggers": [
                 {

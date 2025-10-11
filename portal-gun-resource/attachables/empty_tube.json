@@ -1,0 +1,32 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:attachable": {
+        "description": {
+            "identifier": "ram_portalgun:empty_tube",
+            "render_controllers": [
+                "controller.render.empty_tube"
+            ],
+            "materials": {
+                "default": "entity_alphatest",
+                "tube": "entity_alphablend"
+            },
+            "textures": {
+                "default": "textures/attachable/empty_tube"
+            },
+            "geometry": {
+                "default": "geometry.empty_tube"
+            },
+            "animations": {
+                "tube_controller": "controller.animation.ram_portalgun.empty_tube",
+                "first_person_hold": "animation.empty_tube.first_person_hold",
+                "first_person_hold_offhand": "animation.empty_tube.first_person_hold_offhand",
+                "third_person_hold": "animation.empty_tube.third_person_hold"
+            },
+            "scripts": {
+                "animate": [
+                    "tube_controller"
+                ]
+            }
+        }
+    }
+}

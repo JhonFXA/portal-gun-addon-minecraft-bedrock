@@ -23,7 +23,7 @@ export function changePortalGunMode(player, inventory, portalGunItem, mode, remo
   inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
 }
 
-export function spawnPortal(player, dimension, location, rotation, orientation, scale, ownerId) {
+export function spawnPortal(dimension, location, rotation, orientation, scale, ownerId) {
   const variables = new MolangVariableMap();
   if(orientation == 0){
     variables.setFloat("variable.ray_orientation", 1);
@@ -102,7 +102,7 @@ export function validatePortalList(portalGunItem, inventory, slotIndex) {
 export function removePortal(player, portalEntity, mustRemoveDual = true) {
   const inventory = player.getComponent("inventory");
   const portalGunId = portalEntity.getDynamicProperty(portalDP.ownerPortalGun);
-  const itemObject = findItemInInventory(player, ID.portalGuns[0], portalGunId);
+  const itemObject = findPortalGunInInventory(player, portalGunId);
   const portalGunItem = itemObject?.item;
   const portalListJson = portalGunItem?.getDynamicProperty(
     portalGunDP.portalList
@@ -126,7 +126,6 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
     }
   }
   
-  
   if (mustRemoveDual) {
     let dualPortalID = portalEntity.getDynamicProperty(
       portalDP.DualityPortalId
@@ -135,11 +134,6 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
       let dualPortal = world.getEntity(dualPortalID);
       if(dualPortal){
         const dualTickingArea = dualPortal.getDynamicProperty(portalDP.tickingArea)
-        if(typeof dualTickingArea == "string"){
-          try {
-            dualPortal.dimension.runCommand(`tickingarea remove "${dualTickingArea}"`)
-          } catch {}
-        }
         const block = dualPortal.dimension.getBlock(dualPortal.location);
         const isInWater =
           block.typeId === "minecraft:water" ||
@@ -159,6 +153,12 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
         dualPortal.setProperty(portalSP.close, true);
         system.runTimeout(()=>{
           dualPortal.remove();
+          // Remove tickingarea after entity removal
+          if(typeof dualTickingArea == "string"){
+            try {
+              dualPortal.dimension.runCommand(`tickingarea remove "${dualTickingArea}"`)
+            } catch {}
+          }
         }, tickDelay);
         if(itemObject !== undefined){
           portalIds = portalIds.filter((id) => id !== dualPortal.id);
@@ -168,12 +168,6 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
   }
 
   const tickingArea = portalEntity.getDynamicProperty(portalDP.tickingArea)
-  if(typeof tickingArea == "string"){
-    try {
-      portalEntity.dimension.runCommand(`tickingarea remove "${tickingArea}"`)
-    } catch {}
-  }
-
   const block = portalEntity.dimension.getBlock(portalEntity.location);
   const isInWater =
     block.typeId === "minecraft:water" ||
@@ -194,6 +188,12 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
   portalEntity.setProperty(portalSP.close, true);
   system.runTimeout(()=>{
     portalEntity.remove();
+    // Remove tickingarea after entity removal
+    if(typeof tickingArea == "string"){
+      try {
+        portalEntity.dimension.runCommand(`tickingarea remove "${tickingArea}"`)
+      } catch {}
+    }
   }, tickDelay);
 
   if(itemObject !== undefined)
@@ -237,18 +237,18 @@ export function removeAllPortals(player, portalGunItem, slotIndex = player.selec
       const oldTickingArea = portalEntity.getDynamicProperty(
         portalDP.tickingArea
       );
-      if (typeof oldTickingArea === "string") {
-        try {
-          portalEntity.dimension.runCommand(
-            `tickingarea remove "${oldTickingArea}"`
-          );
-        } catch {}
-      }
       portalEntity.setProperty(portalSP.close, true);
       system.runTimeout(()=>{
         portalEntity.remove();
+        // Remove tickingarea after entity removal
+        if (typeof oldTickingArea === "string") {
+          try {
+            portalEntity.dimension.runCommand(
+              `tickingarea remove "${oldTickingArea}"`
+            );
+          } catch {}
+        }
       }, tickDelay);
-  
     });
     portalIds = [];
     savePortalList(portalGunItem, portalIds, player, inventory, slotIndex);
@@ -269,7 +269,7 @@ export function savePortalList(
   inventory.container.setItem(slotIndex, portalGunItem);
 }
 
-export function findItemInInventory(player, itemId, portalGunId) {
+export function findPortalGunInInventory(player, portalGunId) {
   const inventory = player.getComponent("inventory");
   if (!inventory || !inventory.container) {
     return undefined;
@@ -278,9 +278,25 @@ export function findItemInInventory(player, itemId, portalGunId) {
   for (let i = 0; i < container.size; i++) {
     const item = container.getItem(i);
 
-    if (item && item.typeId === itemId) {
+    if (item && ID.portalGuns.includes(item.typeId)) {
       let gunId = item.getDynamicProperty(portalGunDP.id);
       if (gunId == portalGunId) return { item, slotIndex: i };
+    }
+  }
+  return undefined;
+}
+
+export function findItemInInventory(player, itemId) {
+  const inventory = player.getComponent("inventory");
+  if (!inventory || !inventory.container) {
+    return undefined;
+  }
+  const container = inventory.container;
+  for (let i = 0; i < container.size; i++) {
+    const itemStack = container.getItem(i);
+    
+    if (itemStack && itemStack.typeId === itemId) {
+      return { itemStack, slotIndex: i };
     }
   }
   return undefined;

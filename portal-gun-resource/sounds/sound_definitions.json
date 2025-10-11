@@ -7,7 +7,7 @@
             "min_distance": null,
             "sounds": [
                 {
-                    "name": "sounds/ram_portalgun/portalgun.error",
+                    "name": "sounds/ram_portalgun/portal_gun_error",
                     "volume": 1
                 }
             ]
@@ -18,7 +18,7 @@
             "min_distance": null,
             "sounds": [
                 {
-                    "name": "sounds/ram_portalgun/portal-enter",
+                    "name": "sounds/ram_portalgun/portal_enter",
                     "volume": 1
                 }
             ]
@@ -29,7 +29,7 @@
             "min_distance": null,
             "sounds": [
                 {
-                    "name": "sounds/ram_portalgun/close-portal",
+                    "name": "sounds/ram_portalgun/close_portal",
                     "volume": 1
                 }
             ]
@@ -40,7 +40,7 @@
             "min_distance": null,
             "sounds": [
                 {
-                    "name": "sounds/ram_portalgun/portal-spawn",
+                    "name": "sounds/ram_portalgun/portal_spawn",
                     "volume": 1
                 }
             ]
@@ -51,7 +51,7 @@
             "min_distance": null,
             "sounds": [
                 {
-                    "name": "sounds/ram_portalgun/fire-portal-gun",
+                    "name": "sounds/ram_portalgun/fire_portal_gun",
                     "volume": 1
                 }
             ]
@@ -62,7 +62,7 @@
             "min_distance": null,
             "sounds": [
                 {
-                    "name": "sounds/ram_portalgun/open-menu-portal-gun",
+                    "name": "sounds/ram_portalgun/open_menu_portal_gun",
                     "volume": 1
                 }
             ]
@@ -86,6 +86,50 @@
                 {
                     "name": "sounds/ram_portalgun/selection",
                     "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:portal_gun_plug": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/portal_gun_plug",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:portal_gun_unplug": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/portal_gun_unplug",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:empty_portal_gun": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/empty_portal_gun",
+                    "volume": 1
+                }
+            ]
+        },
+        "ram_portalgun:power_off_portal_gun": {
+            "category": "neutral",
+            "max_distance": null,
+            "min_distance": null,
+            "sounds": [
+                {
+                    "name": "sounds/ram_portalgun/power_off_portal_gun",
+                    "volume": 0.6
                 }
             ]
         }

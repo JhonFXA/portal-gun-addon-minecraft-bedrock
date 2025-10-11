@@ -1,0 +1,31 @@
+{
+	"format_version": "1.19.0",
+	"animation_controllers": {
+		"controller.animation.ram_portalgun.empty_tube": {
+			"states": {
+				"default": {
+					"animations": [
+						{"first_person_hold": "c.is_first_person"},
+						{"third_person_hold": "!c.is_first_person"}
+					],
+					"transitions": [
+						{"offhand": "query.is_item_name_any('slot.weapon.offhand', 'ram_portalgun:empty_tube')" }
+					],
+                    "blend_via_shortest_path": true,
+					"blend_transition": 0.1
+				},
+				"offhand": {
+					"animations": [
+						{"first_person_hold_offhand": "c.is_first_person"},
+						{"third_person_hold": "!c.is_first_person"}
+					],
+					"transitions": [
+						{"default": "!query.is_item_name_any('slot.weapon.offhand', 'ram_portalgun:empty_tube')" }
+					],
+                    "blend_via_shortest_path": true,
+					"blend_transition": 0.1
+				}
+			}
+		}
+	}
+}

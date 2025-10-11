@@ -3,6 +3,21 @@
 		"portal_gun": {
 			"textures": "textures/items/portal_gun"
 		},
+		"portal_gun_discharged": {
+			"textures": "textures/items/portal_gun_discharged"
+		},		
+		"portal_gun_base":{
+			"textures": "textures/items/portal_gun_base"
+		},
+		"empty_tube": {
+			"textures": "textures/items/empty_tube"
+		},
+		"charged_tube": {
+			"textures": "textures/items/charged_tube"
+		},
+		"chip": {
+			"textures": "textures/items/chip"
+		},
     	"rick_hair": {
       		"textures": "textures/items/rick_hair"
     	}

@@ -1,0 +1,33 @@
+{
+	"format_version": "1.19.0",
+	"animation_controllers": {
+		"controller.animation.ram_portalgun.portal_gun": {
+            "initial_state": "default",
+			"states": {
+				"default": {
+					"animations": [
+						{"first_person_hold": "c.is_first_person"},
+						{"third_person_hold": "!c.is_first_person"}
+					],
+					"transitions": [
+						{"gun_shoot": "q.cooldown_time_remaining" }
+					],
+                    "blend_via_shortest_path": true,
+					"blend_transition": 0.1
+				},
+				"gun_shoot": {
+					"animations": [
+						{"first_person_hold": "c.is_first_person"},
+						{"first_person_shoot": "c.is_first_person"},
+						{"third_person_hold": "!c.is_first_person"}
+					],
+					"transitions": [
+						{"default": "!q.cooldown_time_remaining" }
+					],
+                    "blend_via_shortest_path": true,
+					"blend_transition": 0.1
+				}
+			}
+		}
+	}
+}

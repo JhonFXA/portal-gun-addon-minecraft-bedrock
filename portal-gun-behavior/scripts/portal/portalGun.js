@@ -1,11 +1,13 @@
 import {
   Direction,
   system,
+  ItemStack,
+  EquipmentSlot,
   world
 } from "@minecraft/server";
 import { openPortalGunMenu } from "../gui/menu";
 import { 
-  findItemInInventory, 
+  findPortalGunInInventory, 
   linkPortals,
   validatePortalList,
   removePortal,
@@ -14,7 +16,8 @@ import {
   spawnPortal,
   getRotationToPlayer,
   handlePortalGunHistory,
-  findNearbyAir
+  findNearbyAir,
+  findItemInInventory
 } from "../utils/my_API";
 
 import {
@@ -46,9 +49,13 @@ async function waitForChunkLoad(dimension, location, timeoutTicks = 100) {
 }
 
 function initializePortalGun(portalGunItem) {
+    if(portalGunItem.typeId == "ram_portalgun:portal_gun"){
+      portalGunItem.setDynamicProperty(portalGunDP.charge, 100);
+    } else {
+      portalGunItem.setDynamicProperty(portalGunDP.charge, 0);
+    }
     const portalGunId = Math.floor(Math.random() * 10000);
     portalGunItem.setDynamicProperty(portalGunDP.mode, PORTAL_MODES.FIFO);
-    portalGunItem.setDynamicProperty(portalGunDP.charge, 100);
     portalGunItem.setDynamicProperty(portalGunDP.id, portalGunId);
     return portalGunId;
 }
@@ -97,16 +104,31 @@ function usePortalGun(player) {
       portalGunId = initializePortalGun(portalGunItem);
       inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
   }
+  
 
   validatePortalList(portalGunItem, inventory, player.selectedSlotIndex);
-  
   if(player.isSneaking){
     openPortalGunMenu(player);
   } else {
-    player.setDynamicProperty(playerDP.portalGunId, portalGunId)
-    portalGunItem.setDynamicProperty(portalGunDP.lastUser, player.name);
-    inventory.container.setItem(player.selectedSlotIndex, portalGunItem);
-    fireProjectile(player);
+    const charge = portalGunItem.getDynamicProperty(portalGunDP.charge);
+    if(charge > 0){
+      portalGunItem.setDynamicProperty(portalGunDP.charge, charge - 1);
+      let itemToUse = portalGunItem;
+      if(charge - 1 == 0){
+        const dischargedPortalGun = new ItemStack("ram_portalgun:portal_gun_discharged", 1);
+        for (const id of portalGunItem.getDynamicPropertyIds()) {
+          dischargedPortalGun.setDynamicProperty(id, portalGunItem.getDynamicProperty(id));
+        }
+        itemToUse = dischargedPortalGun;
+        player.dimension.playSound("ram_portalgun:power_off_portal_gun", player.location);
+      }
+      player.setDynamicProperty(playerDP.portalGunId, portalGunId)
+      itemToUse.setDynamicProperty(portalGunDP.lastUser, player.name);
+      inventory.container.setItem(player.selectedSlotIndex, itemToUse);
+      fireProjectile(player);
+    } else {
+      player.dimension.playSound("ram_portalgun:empty_portal_gun", player.location);
+    }
   }
 }
 
@@ -214,7 +236,7 @@ function handleCustomMode(
   
   try {
     targetDimension.runCommand(
-      `tickingarea add circle ${fixedCustomLocation.x} ${fixedCustomLocation.y} ${fixedCustomLocation.z} 4 "${tickingAreaName}"`
+      `tickingarea add circle ${fixedCustomLocation.x} ${fixedCustomLocation.y} ${fixedCustomLocation.z} 1 "${tickingAreaName}"`
     );
   } catch (e) {
     console.error(`Failed to create ticking area: ${e}`);
@@ -363,7 +385,7 @@ function summonPortal(player, target) {
     }
 
     const ownerId = player.getDynamicProperty(playerDP.portalGunId);
-    const itemObject = findItemInInventory(player, ID.portalGuns[0], ownerId);
+    const itemObject = findPortalGunInInventory(player, ownerId);
     const portalGunItem = itemObject?.item;
     if (!portalGunItem) {
       player.sendMessage("§c[!] Portal Gun not found in inventory.");
@@ -376,7 +398,7 @@ function summonPortal(player, target) {
     const portalListJson = portalGunItem.getDynamicProperty(portalGunDP.portalList);
     let portalIds = portalListJson ? JSON.parse(portalListJson) : [];
 
-    let newPortal = spawnPortal(player, player.dimension, location, rotation, orientation, scale, portalGunId);
+    let newPortal = spawnPortal(player.dimension, location, rotation, orientation, scale, portalGunId);
 
     portalIds.push(newPortal.id);
 
@@ -435,11 +457,57 @@ function summonPortal(player, target) {
   });
 }
 
+
+
 world.afterEvents.itemUse.subscribe((event) => {
-  if (!ID.portalGuns.includes(event.itemStack.typeId)) {
+  const { itemStack, source: player } = event;
+  if (!ID.portalGuns.includes(itemStack.typeId)) return;
+
+  if (itemStack.typeId === "ram_portalgun:portal_gun_base") {
+    const equippable = player.getComponent("minecraft:equippable");
+    const itemOffhand = equippable.getEquipment(EquipmentSlot.Offhand);
+
+    const tubeTypes = {
+      "ram_portalgun:charged_tube": "ram_portalgun:portal_gun",
+      "ram_portalgun:empty_tube": "ram_portalgun:portal_gun_discharged"
+    };
+
+    const newGunType = tubeTypes[itemOffhand?.typeId];
+    if (newGunType) {
+      const inventory = player.getComponent("inventory").container;
+      const portalGun = new ItemStack(newGunType, 1);
+
+      for (const id of itemStack.getDynamicPropertyIds()) {
+        portalGun.setDynamicProperty(id, itemStack.getDynamicProperty(id));
+      }
+
+      if(itemOffhand.typeId === "ram_portalgun:charged_tube"){
+        const currentCharge = itemOffhand.getDynamicProperty(portalGunDP.charge) ?? 100;
+        portalGun.setDynamicProperty(portalGunDP.charge, currentCharge);
+      } else if (itemOffhand.typeId === "ram_portalgun:empty_tube"){
+        portalGun.setDynamicProperty(portalGunDP.charge, 0);
+      }
+      
+      if (itemOffhand.amount > 1) {
+        itemOffhand.amount -= 1;
+        equippable.setEquipment(EquipmentSlot.Offhand, itemOffhand);
+      } else {
+        equippable.setEquipment(EquipmentSlot.Offhand, undefined);
+      }
+
+      inventory.setItem(player.selectedSlotIndex, portalGun);
+      player.dimension.playSound("ram_portalgun:portal_gun_plug", player.location);
+      return;
+    }
     return;
   }
-  usePortalGun(event.source);
+
+  const cooldownComponent = itemStack.getComponent("cooldown");
+  const cooldown = player.getItemCooldown("portal_gun_cooldown");
+  const cooldownTicks = cooldownComponent.cooldownTicks
+
+  if(cooldown < cooldownTicks - 1) return;
+  usePortalGun(player);
 });
 
 world.afterEvents.entityHitEntity.subscribe((event) => {

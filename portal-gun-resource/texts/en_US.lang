@@ -1,1 +1,4 @@
 item.rickandmorty:portal_gun=Portal Gun
+
+ram_portalgun:portal_gun_group=Portal Guns
+ram_portalgun:head_accessories_group=Head Accessories

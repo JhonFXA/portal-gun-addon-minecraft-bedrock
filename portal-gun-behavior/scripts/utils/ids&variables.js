@@ -3,7 +3,7 @@ export var portalDP;
 export var playerDP;
 export var portalGunDP;
 export var ID = {
-  portalGuns : ["ram_portalgun:portal_gun"],
+  portalGuns : ["ram_portalgun:portal_gun", "ram_portalgun:portal_gun_base", "ram_portalgun:portal_gun_discharged"],
   fluidProjectile : "ram_portalgun:fluid_projectile",
   fluidProjectileHighPressure : "ram_portalgun:fluid_projectile_high_pressure",
   portal: "ram_portalgun:green_portal"

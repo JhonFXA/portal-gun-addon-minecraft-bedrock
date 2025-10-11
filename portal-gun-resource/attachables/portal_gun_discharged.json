@@ -2,32 +2,29 @@
     "format_version": "1.10.0",
     "minecraft:attachable": {
         "description": {
-            "identifier": "ram_portalgun:portal_gun",
+            "identifier": "ram_portalgun:portal_gun_discharged",
             "render_controllers": [
-                "controller.render.portal_gun"
+                "controller.render.portal_gun_discharged"
             ],
             "materials": {
                 "default": "entity_emissive_alpha",
-                "tube": "entity_alphablend",
-                "glow": "entity_beam_additive"
+                "tube": "entity_alphablend"
             },
             "textures": {
                 "default": "textures/attachable/portal_gun"
             },
             "geometry": {
-                "default": "geometry.portal_gun"
+                "default": "geometry.portal_gun_discharged"
             },
             "animations": {
                 "gun_controller": "controller.animation.ram_portalgun.portal_gun",
                 "first_person_hold": "animation.portal_gun.first_person_hold",
                 "third_person_hold": "animation.portal_gun.third_person_hold",
-                "first_person_shoot": "animation.portal_gun.first_person_shoot",
-                "core_animation": "animation.portal_gun.core_animation"
+                "first_person_shoot": "animation.portal_gun.first_person_shoot"
             },
             "scripts": {
                 "animate": [
-                    "gun_controller",
-                    "core_animation"
+                    "gun_controller"
                 ]
             }
         }

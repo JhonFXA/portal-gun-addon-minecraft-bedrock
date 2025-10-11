@@ -1,0 +1,54 @@
+{
+    "format_version": "1.12",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "ram_portalgun:portal_gun_base"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "unlock": [
+            {
+                "item": "minecraft:red_stained_glass"
+            },
+            {
+                "item": "minecraft:iron_ingot"
+            },
+            {
+                "item": "minecraft:stone_button"
+            },
+            {
+                "item": "ram_portalgun:chip"
+            },
+            {
+                "item": "minecraft:dropper"
+            }
+        ],
+        "pattern": [
+            "#ii",
+            "SRD",
+            "i  "
+        ],
+        "key": {
+            "#": {
+                "item": "minecraft:red_stained_glass"
+            },
+            "i": {
+                "item": "minecraft:iron_ingot"
+            },
+            "S": {
+                "item": "minecraft:stone_button"
+            },
+            "R": {
+                "item": "ram_portalgun:chip"
+            },
+            "D": {
+                "item": "minecraft:dropper"
+            }
+        },
+        "result": {
+            "item": "ram_portalgun:portal_gun_base",
+            "count": 1
+        }
+    }
+}

@@ -1,3 +1,4 @@
+import { ItemStack } from "@minecraft/server";
 import {ActionFormData, ModalFormData, MessageFormData} from "@minecraft/server-ui";
 import {changePortalGunMode, removeAllPortals} from '../utils/my_API';
 import { portalGunDP, ID } from "../utils/ids&variables";
@@ -6,10 +7,17 @@ export function openPortalGunMenu(player) {
     const inventory = player.getComponent("inventory");
     const portalGunItem = inventory.container.getItem(player.selectedSlotIndex)
     const currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode);
-    const charge = portalGunItem.getDynamicProperty(portalGunDP.charge);
+    const charge = portalGunItem.getDynamicProperty(portalGunDP.charge)??0;
+
+    const totalBars = 5;
+    const filledBars = Math.ceil(charge / 20); // 0-5
+    let chargeBars = "";
+    for (let i = 0; i < totalBars; i++) {
+        chargeBars += i < filledBars ? "§a|§r" : "§0|§r";
+    }
     const customUi = new ActionFormData()
     .title("Portal Gun Options")
-    .body(`Mode: ${currentMode} | ${charge}%%`)
+    .body(`Mode: §a${currentMode}§r - Charge: ${chargeBars}`)
     .button("Saved Locations", "textures/ui/saved_locations_ui")
     .button("Set Coordinates", "textures/ui/set_coordinates_ui")
     .button("Select Mode", "textures/ui/select_mode_ui")
@@ -175,9 +183,9 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new ModalFormData()
     .title("Set Coordinates")
-    .textField("X Coordinate", "Enter X coordinate")
-    .textField("Y Coordinate", "Enter Y coordinate")
-    .textField("Z Coordinate", "Enter Z coordinate")
+    .textField("X:", "")
+    .textField("Y:", "")
+    .textField("Z:", "")
     .divider()
     .dropdown("Dimension", ["Overworld", "Nether", "The End"],{ defaultValueIndex: 0 })
 
@@ -255,9 +263,9 @@ function openSettingsForm(player, inventory, portalGunItem) {
     .divider()
     .button("History", "textures/ui/history")
     .button("Dismount Portal Gun", "textures/ui/dismount")
-    .button("Close All Portals", "textures/ui/close-all-portals")
-    .button("Reset Portal Gun", "textures/ui/reset-portal-gun")
-    .button("How to Use", "textures/ui/question-mark")
+    .button("Close All Portals", "textures/ui/close_all_portals")
+    .button("Reset Portal Gun", "textures/ui/reset_portal_gun")
+    .button("How to Use", "textures/ui/question_mark")
     .button("Debug Menu", "textures/ui/debug")
     .divider()
     .button("Back to Menu")
@@ -268,7 +276,31 @@ function openSettingsForm(player, inventory, portalGunItem) {
         } else if (response.selection == 1){
             openHistoryForm(player, inventory, portalGunItem);
         } else if (response.selection == 2){
-            //WIP
+            const portalGunProperties = portalGunItem.getDynamicPropertyIds();
+            const portalGunBase = new ItemStack("ram_portalgun:portal_gun_base", 1);
+            portalGunProperties.forEach(id => {
+                const value = portalGunItem.getDynamicProperty(id);         
+                portalGunBase.setDynamicProperty(id, value);
+            });
+            
+            inventory.container.setItem(player.selectedSlotIndex, portalGunBase);
+
+            const charge = portalGunItem.getDynamicProperty(portalGunDP.charge);
+            if(charge > 0){
+                const chargedTube = new ItemStack("ram_portalgun:charged_tube", 1);
+                chargedTube.setDynamicProperty(portalGunDP.charge, charge);
+
+                const lore = [
+                    `§eCharge: ${charge}%§r`
+                ]
+                chargedTube.setLore(lore);
+                inventory.container.addItem(chargedTube);
+            } else {
+                const emptyTube = new ItemStack("ram_portalgun:empty_tube", 1);
+                inventory.container.addItem(emptyTube);
+            }
+
+            player.dimension.playSound("ram_portalgun:portal_gun_unplug", player.location);
         } else if (response.selection == 3){
             removeAllPortals(player, portalGunItem);
             player.dimension.playSound("ram_portalgun:selection", player.location);
@@ -303,7 +335,7 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
         defaultValue: portalGunItem.getDynamicProperty(portalGunDP.safePlacement)? true: false,
         tooltip: "If enabled, it ensures portals\open only in safe spots,\nnever buried underground or\nfloating too high."
     })
-    .slider("Portal Scale (Coming Soon)", 1, 4, {
+    .slider("Portal Scale", 1, 4, {
         defaultValue: scale == 0.5? 1 : scale == 1? 2 : scale == 1.5? 3 : scale == 2? 4 : 2,
         valueStep: 1
     })
@@ -456,7 +488,7 @@ function openDebugMenu(player){
     const autoClose = portalGunItem.getDynamicProperty(portalGunDP.autoClose)? true: false;
     const highPressure = portalGunItem.getDynamicProperty(portalGunDP.highPressure)? true: false;
     const quantPortalsActive = portalList.length;
-    const charge = portalGunItem.getDynamicProperty(portalGunDP.charge);
+    const charge = portalGunItem.getDynamicProperty(portalGunDP.charge)??0;
     const savedLocationsJson = portalGunItem.getDynamicProperty(portalGunDP.savedLocations);
     const savedLocations = savedLocationsJson ? JSON.parse(savedLocationsJson) : [];
     const customLocationJson = portalGunItem.getDynamicProperty(portalGunDP.customLocation);

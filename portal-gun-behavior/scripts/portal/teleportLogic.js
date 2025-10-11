@@ -1,6 +1,6 @@
-import {system, world} from "@minecraft/server";
+import {system, world, EntityTypeFamilyComponent } from "@minecraft/server";
 import { portalDP, portalSP, portalGunDP, ID, PORTAL_MODES} from "../utils/ids&variables";
-import { calculateEuclideanDistance, findItemInInventory, removePortal } from "../utils/my_API";
+import { calculateEuclideanDistance, findPortalGunInInventory, removePortal } from "../utils/my_API";
 
 system.runInterval(() => {
     runCooldown();
@@ -112,12 +112,27 @@ function onTick() {
             if(orientation == 0) radius = 2.2;
             else radius = 2;
         }
-        const entities = findEntitiesNearPortal(portal.dimension, portal.location, radius);
+        let entities = findEntitiesNearPortal(portal.dimension, portal.location, radius, scale);
         if (entities.length > 0) {
-            portal.playAnimation("animation.ram_portalgun.portal.pass");
-            dualPortal.playAnimation("animation.ram_portalgun.portal.pass");
-            
+            if(scale < 1){
+                entities = entities.filter(entity => {
+                    if(entity.typeId == "minecraft:item"){
+                        return true;
+                    }
+                    // verifica se tem o componente de bebê
+                    const typeFamilyComponent = entity.getComponent("minecraft:type_family");
+                    const isBaby = entity.hasComponent("minecraft:is_baby");
+                    const hasAcceptableFamily = 
+                        typeFamilyComponent.hasTypeFamily("minecart") ||
+                        typeFamilyComponent.hasTypeFamily("lightweight") ||
+                        typeFamilyComponent.hasTypeFamily("fish");
+
+                    return isBaby || hasAcceptableFamily;
+                });
+            }
             entities.forEach(entity => {
+                portal.playAnimation("animation.ram_portalgun.portal.pass");
+                dualPortal.playAnimation("animation.ram_portalgun.portal.pass");
                 if (entity.typeId !== "minecraft:player") {
                     activateCooldown(entity);
                     entity.setDynamicProperty(portalDP.lastPortalUsed, dualPortal.id);
@@ -143,7 +158,7 @@ function playerUsePortal(portal, dualPortal, player) {
     system.runTimeout(() => {
         teleportEntityToLocation(dualPortal, player);
         let portalGunId = portal.getDynamicProperty(portalDP.ownerPortalGun);
-        let itemObject = findItemInInventory(player, ID.portalGuns[0], portalGunId);
+        let itemObject = findPortalGunInInventory(player, portalGunId);
         let portalGunItem = itemObject?.item;
         if(portalGunItem){
             const autoClose = portalGunItem.getDynamicProperty(portalGunDP.autoClose);
@@ -152,7 +167,7 @@ function playerUsePortal(portal, dualPortal, player) {
                 let portalIds = portalListJson ? JSON.parse(portalListJson) : [];
                 
                 system.runTimeout(()=>{
-                    let hasGun = findItemInInventory(player, ID.portalGuns[0], portalGunId);
+                    let hasGun = findPortalGunInInventory(player, portalGunId);
                     if(hasGun){
                         let currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode)
                         if((currentMode == PORTAL_MODES.ANCHOR || currentMode == PORTAL_MODES.CUSTOM) && portalIds.length > 2){
@@ -186,11 +201,17 @@ function activateCooldown(entity, ticks = 20) {
     scoreboard.setScore(entity, ticks);
 }
 
-function findEntitiesNearPortal(dimension, location, radius) {
+function findEntitiesNearPortal(dimension, location, radius, scale) {
+    const excludeFamilies = ["ram_portalgun:portal", "ram_portalgun:projectile", "dragon"];
+    if(scale < 1){
+        excludeFamilies.push(...[
+            "player"
+        ]);
+    }
     const queryOptions = {
         location,
         maxDistance: radius,
-        excludeFamilies: ["ram_portalgun:portal", "ram_portalgun:fluid_projectile"]
+        excludeFamilies
     };
     return dimension.getEntities(queryOptions).filter(entity => {
         const teleportationConditions = !isOnCooldown(entity) && !entity.hasTag(TELEPORTED_TAG);

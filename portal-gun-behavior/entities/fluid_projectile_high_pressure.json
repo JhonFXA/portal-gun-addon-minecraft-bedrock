@@ -9,6 +9,18 @@
       "is_experimental": false
     },
     "components": {
+      "minecraft:type_family": {
+          "family": [
+              "ram_portalgun:projectile"
+          ]
+      },
+      "minecraft:despawn": {
+        "despawn_from_simulation_edge": true,
+        "despawn_from_distance": {
+          "min_distance": 128,
+          "max_distance": 128
+        }
+      },
       "minecraft:collision_box": {
         "width": 0.25,
         "height": 0.25
