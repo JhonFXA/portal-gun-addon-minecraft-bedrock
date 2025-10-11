@@ -218,8 +218,8 @@ function handleCustomMode(
 
   // Check if portal already exists
   if (portalIds.length > 1) {
-    const anchorPortal = world.getEntity(portalIds[0]);
-    if (customLocationId !== anchorPortal?.getDynamicProperty(portalDP.locationId)) {
+    const rootPortal = world.getEntity(portalIds[0]);
+    if (customLocationId !== rootPortal?.getDynamicProperty(portalDP.locationId)) {
       removeAllPortals(player, portalGunItem, itemObject.slotIndex);
       portalIds = [newPortal.id];
     } else {
@@ -343,7 +343,6 @@ function handleCustomMode(
       fixedCustomLocation.y += 2;
     }
     let customPortal = spawnPortal(
-      player,
       targetDimension,
       fixedCustomLocation,
       rotation,
@@ -440,7 +439,7 @@ function summonPortal(player, target) {
         savePortalList(portalGunItem, portalIds, player, inventory, itemObject.slotIndex);
         break;
 
-      case PORTAL_MODES.ANCHOR:
+      case PORTAL_MODES.ROOT:
         if (portalIds.length > 1) {
           linkPortals(portalIds[0], portalIds[portalIds.length - 1]);
         }
@@ -526,7 +525,7 @@ world.afterEvents.entityHitEntity.subscribe((event) => {
   const portalListJson = portalGunItem.getDynamicProperty(portalGunDP.portalList);
   let portalIds = portalListJson ? JSON.parse(portalListJson) : [];
 
-  if((mode == PORTAL_MODES.ANCHOR || mode == PORTAL_MODES.CUSTOM) && portalIds.length > 2) {
+  if((mode == PORTAL_MODES.ROOT || mode == PORTAL_MODES.CUSTOM) && portalIds.length > 2) {
     removePortal(player, portalEntity, false);
   } else {
     removePortal(player, portalEntity);

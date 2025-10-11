@@ -170,7 +170,7 @@ function playerUsePortal(portal, dualPortal, player) {
                     let hasGun = findPortalGunInInventory(player, portalGunId);
                     if(hasGun){
                         let currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode)
-                        if((currentMode == PORTAL_MODES.ANCHOR || currentMode == PORTAL_MODES.CUSTOM) && portalIds.length > 2){
+                        if((currentMode == PORTAL_MODES.ROOT || currentMode == PORTAL_MODES.CUSTOM) && portalIds.length > 2){
                             if(portal.id == portalIds[0]){
                                 removePortal(player, dualPortal, false);
                             } else {

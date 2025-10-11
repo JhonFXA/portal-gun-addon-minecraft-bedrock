@@ -76,7 +76,7 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
         form.label("No Locations Saved.")
     }
 
-    form.divider().button("Back to Menu");
+    form.divider().button("Back to Menu", "textures/ui/back_button");
 
     form.show(player).then(response => {
         if (response.selection === 0) {
@@ -220,12 +220,13 @@ function openSelectModeForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new ActionFormData()
     .title("Select Mode")
-    .button("FIFO Mode\n[Default]")
+    .button("FIFO Mode")
     .button("LIFO Mode")
     .button("Multi-Pair Mode")
-    .button("Anchor Mode")
+    .button("Root Mode")
     .divider()
-    .button("Back to Menu");
+    .label("Modes explained:\n\n§eFIFO§r - First In First Out:\nAfter having 2 portals active, each new portal will replace the oldest one.\n\n§eLIFO§r - Last In First Out:\nAfter having 2 portals active, each new portal will replace the newest one.\n\n§eMulti-Pair§r:\nAllows you to have multiple pairs of portals active at the same time. You can enter any portal and come out from its pair.\n\n§eRoot§r:\nShoots a portal that acts as an anchor. You can shoot multiple portals, but when you enter one, you will always come out from the root portal. Entering the root portal will take you back to the last portal you entered.")
+    .button("Back to Menu", "textures/ui/back_button");
 
     form.show(player).then(response => {
         if(response.selection == 0){
@@ -244,9 +245,9 @@ function openSelectModeForm(player, inventory, portalGunItem) {
                 `§aSet Mode to Multi-Pair.§r`
             );
         } else if (response.selection == 3){
-            changePortalGunMode(player, inventory, portalGunItem, "Anchor");
+            changePortalGunMode(player, inventory, portalGunItem, "Root");
             player.onScreenDisplay.setActionBar(
-                `§aSet Mode to Anchor.§r`
+                `§aSet Mode to Root.§r`
             );
         } else if (response.selection == 4){
             openPortalGunMenu(player);
@@ -268,7 +269,7 @@ function openSettingsForm(player, inventory, portalGunItem) {
     .button("How to Use", "textures/ui/question_mark")
     .button("Debug Menu", "textures/ui/debug")
     .divider()
-    .button("Back to Menu")
+    .button("Back to Menu", "textures/ui/back_button")
 
     form.show(player).then(response => {
         if(response.selection == 0){
@@ -333,7 +334,7 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
     })
     .toggle("Safe Placement", {
         defaultValue: portalGunItem.getDynamicProperty(portalGunDP.safePlacement)? true: false,
-        tooltip: "If enabled, it ensures portals\open only in safe spots,\nnever buried underground or\nfloating too high."
+        tooltip: "If enabled, it ensures portals\nopen only in safe spots,\nnever buried underground or\nfloating too high."
     })
     .slider("Portal Scale", 1, 4, {
         defaultValue: scale == 0.5? 1 : scale == 1? 2 : scale == 1.5? 3 : scale == 2? 4 : 2,
@@ -413,7 +414,7 @@ function openHistoryForm(player, inventory, portalGunItem){
         });
     }
     form.divider()
-    .button("Back to Settings");
+    .button("Back to Settings", "textures/ui/back_button");
 
     form.show(player).then(response => {
         if (response.selection == history.length){
@@ -466,7 +467,7 @@ function openHowToUseForm(player, inventory, portalGunItem){
     .body("\n:mouse_right_button: - Interact\n\n:mouse_left_button: - Attack\n\n:tip_virtual_button_sneak: - Sneak (Shift)\n\n")
     .divider()
     .label("§eShoot Portals§r     :mouse_right_button:\n\n§eFast Change Location§r     :mouse_left_button:\n\n§eOpen Menu§r     :tip_virtual_button_sneak: + :mouse_right_button:\n\n§eRemove a Portal§r     :tip_virtual_button_sneak: + :mouse_left_button: while aiming at it\n\n")
-    .button("Back to Menu");
+    .button("Back to Menu", "textures/ui/back_button");
     form.show(player).then(response => {
         if(response.selection == 0){
             openSettingsForm(player, inventory, portalGunItem);
@@ -509,7 +510,7 @@ function openDebugMenu(player){
         Set to Location: ${customLocation? `\n- Name: ${customLocation.name}\n- Dimension: ${customLocation.dimensionId}\n- X: ${customLocation.x}, Y: ${customLocation.y}, Z: ${customLocation.z}` : "None"}\n
         ========================\n
         `)
-    .button("Back to Settings");
+    .button("Back to Settings", "textures/ui/back_button");
     form.show(player).then(response => {
         if(response.selection == 0){
             openSettingsForm(player, inventory, portalGunItem);

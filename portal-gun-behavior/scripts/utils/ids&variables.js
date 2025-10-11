@@ -13,7 +13,7 @@ export const PORTAL_MODES = {
     FIFO: "FIFO",
     LIFO: "LIFO",
     MULTI_PAIR: "Multi-Pair",
-    ANCHOR: "Anchor",
+    ROOT: "Root",
     CUSTOM: "CUSTOM"
 };
 

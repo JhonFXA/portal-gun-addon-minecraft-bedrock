@@ -114,14 +114,14 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
   if(itemObject !== undefined){
     const currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode);
   
-    if ((currentMode == PORTAL_MODES.ANCHOR || currentMode == PORTAL_MODES.CUSTOM) && portalEntity.id == portalIds[0]) {
+    if ((currentMode == PORTAL_MODES.ROOT || currentMode == PORTAL_MODES.CUSTOM) && portalEntity.id == portalIds[0]) {
       removeAllPortals(player, portalGunItem, itemObject.slotIndex);
       return;
     }
   
     portalIds = portalIds.filter((id) => id !== portalEntity.id);
     
-    if((currentMode == PORTAL_MODES.ANCHOR || currentMode == PORTAL_MODES.CUSTOM) && portalIds.length > 1){
+    if((currentMode == PORTAL_MODES.ROOT || currentMode == PORTAL_MODES.CUSTOM) && portalIds.length > 1){
       linkPortals(portalIds[0], portalIds[portalIds.length - 1]);
     }
   }
@@ -151,12 +151,13 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
           }, 10)
         }
         dualPortal.setProperty(portalSP.close, true);
+        const dualPortalDimension = dualPortal.dimension;
         system.runTimeout(()=>{
           dualPortal.remove();
           // Remove tickingarea after entity removal
           if(typeof dualTickingArea == "string"){
             try {
-              dualPortal.dimension.runCommand(`tickingarea remove "${dualTickingArea}"`)
+              dualPortalDimension.runCommand(`tickingarea remove "${dualTickingArea}"`)
             } catch {}
           }
         }, tickDelay);
@@ -186,12 +187,13 @@ export function removePortal(player, portalEntity, mustRemoveDual = true) {
   }
 
   portalEntity.setProperty(portalSP.close, true);
+  const portalDimension = portalEntity.dimension;
   system.runTimeout(()=>{
     portalEntity.remove();
     // Remove tickingarea after entity removal
     if(typeof tickingArea == "string"){
       try {
-        portalEntity.dimension.runCommand(`tickingarea remove "${tickingArea}"`)
+        portalDimension.runCommand(`tickingarea remove "${tickingArea}"`)
       } catch {}
     }
   }, tickDelay);
