@@ -3,18 +3,28 @@ import {ActionFormData, ModalFormData, MessageFormData} from "@minecraft/server-
 import {changePortalGunMode, removeAllPortals} from '../utils/my_API';
 import { portalGunDP, ID } from "../utils/ids&variables";
 
+/**
+ * Opens the main Portal Gun menu for the player.
+ *
+ * @param {Player} player - The player interacting with the Portal Gun.
+ *
+ * Displays the main options such as:
+ * Saved Locations, Set Coordinates, Select Mode, and Settings.
+ */
 export function openPortalGunMenu(player) {
     const inventory = player.getComponent("inventory");
     const portalGunItem = inventory.container.getItem(player.selectedSlotIndex)
     const currentMode = portalGunItem.getDynamicProperty(portalGunDP.mode);
     const charge = portalGunItem.getDynamicProperty(portalGunDP.charge)??0;
 
+    // Visual charge indicator (0–5 bars)
     const totalBars = 5;
     const filledBars = Math.ceil(charge / 20); // 0-5
     let chargeBars = "";
     for (let i = 0; i < totalBars; i++) {
         chargeBars += i < filledBars ? "§a|§r" : "§0|§r";
     }
+
     const customUi = new ActionFormData()
     .title("Portal Gun Options")
     .body(`Mode: §a${currentMode}§r - Charge: ${chargeBars}`)
@@ -27,16 +37,25 @@ export function openPortalGunMenu(player) {
     player.dimension.playSound("ram_portalgun:open_menu", player.location);
 
     customUi.show(player).then(response => {
-        if(response.selection == 0) openSavedLocationsForm(player, inventory, portalGunItem);
-        else if(response.selection == 1) openSetCoordinatesForm(player, inventory, portalGunItem);
-        else if(response.selection == 2) openSelectModeForm(player, inventory, portalGunItem);
-        else if(response.selection == 3) openSettingsForm(player, inventory, portalGunItem,);
-        else {
-            player.dimension.playSound("ram_portalgun:button_click", player.location);
+       switch (response.selection) {
+            case 0: openSavedLocationsForm(player, inventory, portalGunItem); break;
+            case 1: openSetCoordinatesForm(player, inventory, portalGunItem); break;
+            case 2: openSelectModeForm(player, inventory, portalGunItem); break;
+            case 3: openSettingsForm(player, inventory, portalGunItem); break;
+            default: player.dimension.playSound("ram_portalgun:button_click", player.location);
         }
     })
 }
 
+/**
+ * Displays the list of saved teleport locations stored in the Portal Gun.
+ *
+ * @param {Player} player - The player interacting with the menu.
+ * @param {EntityInventoryComponent} inventory - The player's inventory component.
+ * @param {ItemStack} portalGunItem - The current Portal Gun item.
+ *
+ * Allows the player to save, delete, or select custom teleport locations.
+ */
 function openSavedLocationsForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     const form = new ActionFormData()
@@ -45,37 +64,20 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
     .button("Delete Location", "textures/ui/delete_location_ui")
     .divider()
     
+    // Retrieve saved locations from the Portal Gun's dynamic property
     const locationsJson = portalGunItem.getDynamicProperty(portalGunDP.savedLocations);
-    
     const savedLocations = locationsJson ? JSON.parse(locationsJson) : [];
 
     if(savedLocations.length > 0){
         form.label(`Locations (${savedLocations.length}):`);
         savedLocations.forEach(location => {
-            let dimension;
-            let color;
-            switch(location.dimensionId){
-                case "minecraft:overworld":
-                    dimension = "Overworld"
-                    color = "§q"
-                    break;
-                case "minecraft:nether":
-                    dimension = "Nether"
-                    color = "§4"
-                    break;
-                case "minecraft:the_end":
-                    dimension = "The End"
-                    color = "§u"
-                    break;
-                default:
-                    break;
-            }
-            form.button(`§0${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`);
+            const { dimensionId, name, x, y, z } = location;
+            const { dimName, color } = getDimensionLabel(dimensionId);
+            form.button(`§0${name}§r\nX: ${x}, Y: ${y}, Z: ${z}\nDimension: ${color}${dimName}§r`);
         });
     } else {
         form.label("No Locations Saved.")
     }
-
     form.divider().button("Back to Menu", "textures/ui/back_button");
 
     form.show(player).then(response => {
@@ -98,7 +100,13 @@ function openSavedLocationsForm(player, inventory, portalGunItem) {
     })
 }
 
-
+/**
+ * Opens form to save the current player location.
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ * @param {Array} savedLocations
+ */
 function openSaveCurrentLocationForm(player, inventory, portalGunItem, savedLocations){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     const form = new ModalFormData()
@@ -127,6 +135,15 @@ function openSaveCurrentLocationForm(player, inventory, portalGunItem, savedLoca
     })
 }
 
+/**
+ * Deletes a selected saved location.
+ * Provides a cancel option if the player changes their mind.
+ *
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ * @param {Array} savedLocations
+ */
 function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     const form = new ActionFormData()
@@ -141,25 +158,9 @@ function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations
         return;
     }
     savedLocations.forEach((location) => {
-        let dimension;
-        let color;
-        switch(location.dimensionId){
-            case "minecraft:overworld":
-                dimension = "Overworld"
-                color = "§q"
-                break;
-            case "minecraft:nether":
-                dimension = "Nether"
-                color = "§4"
-                break;
-            case "minecraft:the_end":
-                dimension = "The End"
-                color = "§u"
-                break;
-            default:
-                break;
-        }
-        form.button(`§0${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`);
+        const { dimensionId, name, x, y, z } = location;
+        const { dimName, color } = getDimensionLabel(dimensionId);
+        form.button(`§0${name}§r\nX: ${x}, Y: ${y}, Z: ${z}\nDimension: ${color}${dimName}§r`);
     });
     form.divider()
     .button("Cancel");
@@ -179,6 +180,14 @@ function openDeleteLocationForm(player, inventory, portalGunItem, savedLocations
 
 }
 
+/**
+ * Opens the form to set custom coordinates for the Portal Gun.
+ * Allows the player to input X, Y, Z, and select the dimension.
+ *
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ */
 function openSetCoordinatesForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new ModalFormData()
@@ -216,6 +225,14 @@ function openSetCoordinatesForm(player, inventory, portalGunItem) {
     });
 }
 
+/**
+ * Opens the Portal Gun mode selection menu.
+ * Player can switch between FIFO, LIFO, Multi-Pair, or Root mode.
+ *
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ */
 function openSelectModeForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new ActionFormData()
@@ -229,33 +246,30 @@ function openSelectModeForm(player, inventory, portalGunItem) {
     .button("Back to Menu", "textures/ui/back_button");
 
     form.show(player).then(response => {
-        if(response.selection == 0){
-            changePortalGunMode(player, inventory, portalGunItem, "FIFO");
-            player.onScreenDisplay.setActionBar(
-                `§aSet Mode to FIFO.§r`
-            );
-        } else if (response.selection == 1){
-            changePortalGunMode(player, inventory, portalGunItem, "LIFO");
-            player.onScreenDisplay.setActionBar(
-                `§aSet Mode to LIFO.§r`
-            );
-        } else if (response.selection == 2){
-            changePortalGunMode(player, inventory, portalGunItem, "Multi-Pair");
-            player.onScreenDisplay.setActionBar(
-                `§aSet Mode to Multi-Pair.§r`
-            );
-        } else if (response.selection == 3){
-            changePortalGunMode(player, inventory, portalGunItem, "Root");
-            player.onScreenDisplay.setActionBar(
-                `§aSet Mode to Root.§r`
-            );
-        } else if (response.selection == 4){
-            openPortalGunMenu(player);
+        switch (response.selection) {
+            case 0: changePortalGunMode(player, inventory, portalGunItem, "FIFO"); 
+                    player.onScreenDisplay.setActionBar(`§aSet Mode to FIFO.§r`); break;
+            case 1: changePortalGunMode(player, inventory, portalGunItem, "LIFO"); 
+                    player.onScreenDisplay.setActionBar(`§aSet Mode to LIFO.§r`); break;
+            case 2: changePortalGunMode(player, inventory, portalGunItem, "Multi-Pair"); 
+                    player.onScreenDisplay.setActionBar(`§aSet Mode to Multi-Pair.§r`); break;
+            case 3: changePortalGunMode(player, inventory, portalGunItem, "Root"); 
+                    player.onScreenDisplay.setActionBar(`§aSet Mode to Root.§r`); break;
+            case 4: openPortalGunMenu(player); break;
         }
     })
 
 }
 
+
+/**
+ * Opens the Portal Gun settings menu.
+ * Provides access to behavior settings, history, dismounting, resetting, and debugging.
+ *
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ */
 function openSettingsForm(player, inventory, portalGunItem) {
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new ActionFormData()
@@ -272,51 +286,29 @@ function openSettingsForm(player, inventory, portalGunItem) {
     .button("Back to Menu", "textures/ui/back_button")
 
     form.show(player).then(response => {
-        if(response.selection == 0){
-            openBehaviorSettingsForm(player, portalGunItem, inventory);
-        } else if (response.selection == 1){
-            openHistoryForm(player, inventory, portalGunItem);
-        } else if (response.selection == 2){
-            const portalGunProperties = portalGunItem.getDynamicPropertyIds();
-            const portalGunBase = new ItemStack("ram_portalgun:portal_gun_base", 1);
-            portalGunProperties.forEach(id => {
-                const value = portalGunItem.getDynamicProperty(id);         
-                portalGunBase.setDynamicProperty(id, value);
-            });
-            
-            inventory.container.setItem(player.selectedSlotIndex, portalGunBase);
-
-            const charge = portalGunItem.getDynamicProperty(portalGunDP.charge);
-            if(charge > 0){
-                const chargedTube = new ItemStack("ram_portalgun:charged_tube", 1);
-                chargedTube.setDynamicProperty(portalGunDP.charge, charge);
-
-                const lore = [
-                    `§eCharge: ${charge}%§r`
-                ]
-                chargedTube.setLore(lore);
-                inventory.container.addItem(chargedTube);
-            } else {
-                const emptyTube = new ItemStack("ram_portalgun:empty_tube", 1);
-                inventory.container.addItem(emptyTube);
-            }
-
-            player.dimension.playSound("ram_portalgun:portal_gun_unplug", player.location);
-        } else if (response.selection == 3){
-            removeAllPortals(player, portalGunItem);
-            player.dimension.playSound("ram_portalgun:selection", player.location);
-        } else if(response.selection == 4){
-            openResetForm(player, portalGunItem, inventory);
-        } else if(response.selection == 5){
-            openHowToUseForm(player, inventory, portalGunItem);
-        } else if(response.selection == 6){
-            openDebugMenu(player);
-        } else if(response.selection == 7){
-            openPortalGunMenu(player);
+        switch (response.selection) {
+            case 0: openBehaviorSettingsForm(player, portalGunItem, inventory); break;
+            case 1: openHistoryForm(player, inventory, portalGunItem); break;
+            case 2: dismountPortalGun(player, portalGunItem, inventory); break;
+            case 3: removeAllPortals(player, portalGunItem); 
+                player.dimension.playSound("ram_portalgun:selection", player.location); break;
+            case 4: openResetForm(player, portalGunItem, inventory); break;
+            case 5: openHowToUseForm(player, inventory, portalGunItem); break;
+            case 6: openDebugMenu(player); break;
+            case 7: openPortalGunMenu(player); break;
         }
     })
 }
 
+
+/**
+ * Opens behavior settings form for the Portal Gun.
+ * Adjusts auto-close, high pressure, safe placement, and portal scale.
+ *
+ * @param {Player} player
+ * @param {ItemStack} portalGunItem
+ * @param {EntityInventoryComponent} inventory
+ */
 function openBehaviorSettingsForm(player, portalGunItem, inventory){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let autoClose = portalGunItem.getDynamicProperty(portalGunDP.autoClose);
@@ -378,6 +370,14 @@ function openBehaviorSettingsForm(player, portalGunItem, inventory){
     })
 }
 
+/**
+ * Opens the teleportation history menu.
+ * Player can select previous locations (up to 30) to use them again.
+ *
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ */
 function openHistoryForm(player, inventory, portalGunItem){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     const historyJson = portalGunItem.getDynamicProperty(portalGunDP.historyLocations);
@@ -390,31 +390,12 @@ function openHistoryForm(player, inventory, portalGunItem){
 
     if(history.length == 0){
         form.label("§eNo history to show.§r");
-    } else {
-        history.forEach( location => {
-            let dimension;
-                let color;
-                switch(location.dimensionId){
-                    case "minecraft:overworld":
-                        dimension = "Overworld"
-                        color = "§q"
-                        break;
-                    case "minecraft:nether":
-                        dimension = "Nether"
-                        color = "§4"
-                        break;
-                    case "minecraft:the_end":
-                        dimension = "The End"
-                        color = "§u"
-                        break;
-                    default:
-                        break;
-                }
-            form.button(`§0${location.name}§r\nX: ${location.x}, Y: ${location.y}, Z: ${location.z}\nDimension: ${color}${dimension}§r`)
-        });
-    }
-    form.divider()
-    .button("Back to Settings", "textures/ui/back_button");
+    } else history.forEach( location => {
+        const { dimensionId, name, x, y, z } = location;
+        const { dimName, color } = getDimensionLabel(dimensionId);
+        form.button(`§0${name}§r\nX:${x}, Y:${y}, Z:${z}\nDimension: ${color}${dimName}§r`);
+    });
+    form.divider().button("Back to Settings", "textures/ui/back_button");
 
     form.show(player).then(response => {
         if (response.selection == history.length){
@@ -433,6 +414,14 @@ function openHistoryForm(player, inventory, portalGunItem){
     });
 }
 
+/**
+ * Opens a confirmation form to reset the Portal Gun.
+ * Clears all dynamic properties and saved locations.
+ *
+ * @param {Player} player
+ * @param {ItemStack} portalGunItem
+ * @param {EntityInventoryComponent} inventory
+ */
 function openResetForm(player, portalGunItem, inventory){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new MessageFormData()
@@ -459,6 +448,14 @@ function openResetForm(player, portalGunItem, inventory){
     })
 }
 
+/**
+ * Opens the “How to Use” tutorial form.
+ * Displays controls and basic usage instructions.
+ *
+ * @param {Player} player
+ * @param {EntityInventoryComponent} inventory
+ * @param {ItemStack} portalGunItem
+ */
 function openHowToUseForm(player, inventory, portalGunItem){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     let form = new ActionFormData()
@@ -477,6 +474,12 @@ function openHowToUseForm(player, inventory, portalGunItem){
     });
 }
 
+/**
+ * Opens the debug menu for the Portal Gun.
+ * Displays all internal properties for troubleshooting.
+ *
+ * @param {Player} player
+ */
 function openDebugMenu(player){
     player.dimension.playSound("ram_portalgun:button_click", player.location);
     const inventory = player.getComponent("inventory");
@@ -488,6 +491,8 @@ function openDebugMenu(player){
     const mode = portalGunItem.getDynamicProperty(portalGunDP.mode);
     const autoClose = portalGunItem.getDynamicProperty(portalGunDP.autoClose)? true: false;
     const highPressure = portalGunItem.getDynamicProperty(portalGunDP.highPressure)? true: false;
+    const safePlacement = portalGunItem.getDynamicProperty(portalGunDP.safePlacement)? true: false;
+    const scale = portalGunItem.getDynamicProperty(portalGunDP.scale);
     const quantPortalsActive = portalList.length;
     const charge = portalGunItem.getDynamicProperty(portalGunDP.charge)??0;
     const savedLocationsJson = portalGunItem.getDynamicProperty(portalGunDP.savedLocations);
@@ -505,6 +510,8 @@ function openDebugMenu(player){
         Charge: ${charge}%%\n
         Auto Close: ${autoClose}\n
         High Pressure: ${highPressure}\n
+        Safe Placement: ${safePlacement}\n
+        Scale: ${scale}x\n
         Quantity of Portals Active: ${quantPortalsActive}\n
         Quantity of Saved Locations: ${savedLocations.length}\n
         Set to Location: ${customLocation? `\n- Name: ${customLocation.name}\n- Dimension: ${customLocation.dimensionId}\n- X: ${customLocation.x}, Y: ${customLocation.y}, Z: ${customLocation.z}` : "None"}\n
@@ -518,4 +525,50 @@ function openDebugMenu(player){
             return;
         }
     })
+}
+
+/**
+ * Helper function: returns a user-friendly dimension name and color for UI.
+ *
+ * @param {string} dimensionId
+ * @returns {{dimName: string, color: string}}
+ */
+function getDimensionLabel(dimensionId) {
+    switch (dimensionId) {
+        case "minecraft:overworld": return { dimName: "Overworld", color: "§q" };
+        case "minecraft:nether": return { dimName: "Nether", color: "§4" };
+        case "minecraft:the_end": return { dimName: "The End", color: "§u" };
+        default: return { dimName: "Unknown", color: "§f" };
+    }
+}
+
+/**
+ * Dismounts the Portal Gun back to its base form and returns tubes for remaining charge.
+ *
+ * @param {Player} player
+ * @param {ItemStack} portalGunItem
+ * @param {EntityInventoryComponent} inventory
+ */
+function dismountPortalGun(player, portalGunItem, inventory) {
+    const portalGunProperties = portalGunItem.getDynamicPropertyIds();
+    const portalGunBase = new ItemStack("ram_portalgun:portal_gun_base", 1);
+
+    portalGunProperties.forEach(id => {
+        const value = portalGunItem.getDynamicProperty(id);
+        portalGunBase.setDynamicProperty(id, value);
+    });
+
+    inventory.container.setItem(player.selectedSlotIndex, portalGunBase);
+
+    const charge = portalGunItem.getDynamicProperty(portalGunDP.charge);
+    if (charge > 0) {
+        const chargedTube = new ItemStack("ram_portalgun:charged_tube", 1);
+        chargedTube.setDynamicProperty(portalGunDP.charge, charge);
+        chargedTube.setLore([`§eCharge: ${charge}%§r`]);
+        inventory.container.addItem(chargedTube);
+    } else {
+        inventory.container.addItem(new ItemStack("ram_portalgun:empty_tube", 1));
+    }
+
+    player.dimension.playSound("ram_portalgun:portal_gun_unplug", player.location);
 }
