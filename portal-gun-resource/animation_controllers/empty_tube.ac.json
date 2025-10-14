@@ -1,29 +1,31 @@
 {
-	"format_version": "1.19.0",
+	"format_version": "1.10.0",
 	"animation_controllers": {
 		"controller.animation.ram_portalgun.empty_tube": {
+			"initial_state": "default",
 			"states": {
 				"default": {
 					"animations": [
-						{"first_person_hold": "c.is_first_person"},
-						{"third_person_hold": "!c.is_first_person"}
+						{
+							"first_person_hold": "c.item_slot == 'main_hand'"
+						},
+						{
+							"first_person_hold_offhand": "c.item_slot != 'main_hand'"
+						}
 					],
 					"transitions": [
-						{"offhand": "query.is_item_name_any('slot.weapon.offhand', 'ram_portalgun:empty_tube')" }
-					],
-                    "blend_via_shortest_path": true,
-					"blend_transition": 0.1
+						{
+							"third_person": "!c.is_first_person"
+						}
+					]
 				},
-				"offhand": {
-					"animations": [
-						{"first_person_hold_offhand": "c.is_first_person"},
-						{"third_person_hold": "!c.is_first_person"}
-					],
+				"third_person": {
+					"animations": [ "third_person_hold" ],
 					"transitions": [
-						{"default": "!query.is_item_name_any('slot.weapon.offhand', 'ram_portalgun:empty_tube')" }
-					],
-                    "blend_via_shortest_path": true,
-					"blend_transition": 0.1
+						{
+							"default": "c.is_first_person"
+						}
+					]
 				}
 			}
 		}

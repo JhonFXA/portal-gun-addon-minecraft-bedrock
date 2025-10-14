@@ -1,4 +1,4 @@
-import {system, world, EntityTypeFamilyComponent } from "@minecraft/server";
+import {system, world} from "@minecraft/server";
 import { portalDP, portalSP, portalGunDP, ID, PORTAL_MODES} from "../utils/ids&variables";
 import { calculateEuclideanDistance, findPortalGunInInventory, removePortal } from "../utils/my_API";
 
